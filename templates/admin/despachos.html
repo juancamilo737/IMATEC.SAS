@@ -1,0 +1,74 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Despachos — IMATEC{% endblock %}
+{% block encabezado %}Tablero de despachos{% endblock %}
+{% block acciones %}<a href="/admin/remisiones/nueva" class="btn btn-sm">+ Nueva remisión</a>{% endblock %}
+
+{% block contenido %}
+<div class="rejilla" style="grid-template-columns:repeat(auto-fit,minmax(330px,1fr));align-items:start">
+  {% for clave, titulo, color in [
+      ('pendiente','Por despachar','alerta'),
+      ('despachada','En ruta','info'),
+      ('entregada','Entregadas','ok')] %}
+  <div class="tarjeta">
+    <div class="tarjeta-cab">
+      <h3>{{ titulo }}</h3>
+      <span class="tag tag-{{ color }}" style="margin-left:auto">{{ grupos[clave]|length }}</span>
+    </div>
+    <div class="tarjeta-cuerpo" style="display:flex;flex-direction:column;gap:1rem">
+      {% for r in grupos[clave] %}
+      <div style="border:var(--borde);border-radius:6px;padding:1rem;border-left:3px solid var(--{{ 'alerta' if clave=='pendiente' else ('info' if clave=='despachada' else 'ok') }})">
+        <div style="display:flex;justify-content:space-between;gap:.6rem;align-items:start">
+          <div>
+            <a href="/admin/remisiones/{{ r.id }}" class="enlace-doc"><strong>{{ r.numero }}</strong></a>
+            <div style="font-weight:500">{{ r.razon_social }}</div>
+            <div class="silencio">{{ r.direccion_entrega or 'Sin dirección' }}{% if r.ciudad_entrega %} · {{ r.ciudad_entrega }}{% endif %}</div>
+          </div>
+          <span class="silencio">{{ r.fecha }}</span>
+        </div>
+
+        <div class="silencio" style="margin-top:.6rem;font-size:.84rem">
+          {% for i in r['items'][:4] %}• {{ i.cantidad|num }} {{ i.unidad }} — {{ i.descripcion }}<br>{% endfor %}
+          {% if r['items']|length > 4 %}<em>y {{ r['items']|length - 4 }} ítem(s) más…</em>{% endif %}
+        </div>
+
+        {% if clave == 'pendiente' %}
+        <form method="post" action="/admin/remisiones/despachar" style="margin-top:.9rem">
+          <input type="hidden" name="remision_id" value="{{ r.id }}">
+          <div class="fila" style="gap:.5rem">
+            <div class="campo" style="margin:0"><label>Transportador</label>
+              <input type="text" name="transportador" value="{{ r.transportador }}"></div>
+            <div class="campo" style="margin:0"><label>Placa</label>
+              <input type="text" name="placa" value="{{ r.placa }}"></div>
+          </div>
+          <button class="btn btn-sm" style="margin-top:.6rem;width:100%">Marcar despachada</button>
+        </form>
+        {% elif clave == 'despachada' %}
+        <form method="post" action="/admin/remisiones/entregar" style="margin-top:.9rem">
+          <input type="hidden" name="remision_id" value="{{ r.id }}">
+          <div class="silencio" style="margin-bottom:.5rem">
+            {{ r.transportador or 'Sin transportador' }}{% if r.placa %} · {{ r.placa }}{% endif %}</div>
+          <div class="campo" style="margin:0"><label>Recibido por</label>
+            <input type="text" name="recibido_por" required placeholder="Nombre de quien recibe"></div>
+          <button class="btn btn-sm" style="margin-top:.6rem;width:100%">Registrar entrega</button>
+        </form>
+        {% else %}
+        <div style="margin-top:.9rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
+          <span class="tag tag-ok">Recibió: {{ r.recibido_por or '—' }}</span>
+          {% if not r.facturas %}
+          <form method="post" action="/admin/remisiones/facturar" style="margin:0">
+            <input type="hidden" name="remision_id" value="{{ r.id }}">
+            <button class="btn btn-sm">Facturar</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="vacio" style="padding:2rem 1rem"><b>Nada aquí</b>
+        <p style="margin:0">Sin remisiones en este estado.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

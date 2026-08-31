@@ -1,0 +1,58 @@
+{% extends "base_public.html" %}
+{% block titulo %}Nosotros — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="hero" style="padding:4.5rem 0 4rem">
+  <div class="contenedor">
+    <span class="hero-etiqueta">Nosotros</span>
+    <h1>La <em>empresa</em></h1>
+  </div>
+</section>
+<div class="franja-amarilla"></div>
+
+<section class="seccion">
+  <div class="contenedor" style="max-width:860px">
+    <p style="font-size:1.15rem;line-height:1.85">
+      Con un equipo humano de <strong>más de 30 años de experiencia</strong> en el desarrollo de
+      proyectos en cada una de nuestras áreas de servicio en las más importantes empresas del
+      suroccidente colombiano.
+    </p>
+    <p style="font-size:1.05rem;line-height:1.85;color:var(--gris-600)">
+      Esta experiencia otorga a IMATEC S.A.S el suficiente respaldo y confianza para estar
+      presente en proyectos institucionales, comerciales, industriales y en el desarrollo de
+      asesorías técnicas. Ofreciendo servicios integrados de alta calidad técnica en las áreas
+      de diseño, fabricación, montaje y mantenimiento, IMATEC S.A.S se constituye en la mejor
+      alternativa para implementar sus proyectos.
+    </p>
+  </div>
+</section>
+
+<section class="seccion seccion-gris">
+  <div class="contenedor">
+    <div class="titulo-seccion"><div class="kicker">Premisas</div>
+      <h2>Cómo trabajamos</h2></div>
+    <div class="rejilla rejilla-4">
+      {% for t,d in [
+        ('El respeto','Enalteciendo al individuo, valorando su opinión y actuando a favor de su integridad física y moral.'),
+        ('La eficiencia','Practicando la excelencia en la ejecución de cada trabajo, la oportunidad en la respuesta y en la solución.'),
+        ('La seguridad','Eliminando la exposición excesiva a riesgos innecesarios, mediante la aplicación de métodos de trabajo seguros.'),
+        ('La mística','Recuperando las buenas prácticas de trabajo, con entrega y dedicación a lo que hacemos.')] %}
+      <div class="servicio">
+        <h3>{{ t }}</h3>
+        <p style="margin:0">{{ d }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="seccion seccion-oscura">
+  <div class="contenedor centro" style="max-width:780px">
+    <div class="kicker" style="font-family:var(--titulo);font-weight:700;font-size:.74rem;
+         letter-spacing:.22em;text-transform:uppercase;color:var(--amarillo);margin-bottom:1rem">Objetivo</div>
+    <h2 style="font-size:clamp(1.4rem,3vw,2rem);line-height:1.4">
+      Ser el mejor proveedor de servicios integrados de ingeniería, montajes, mantenimiento y
+      equipos para producción industrial y comercial del suroccidente colombiano.
+    </h2>
+  </div>
+</section>
+{% endblock %}

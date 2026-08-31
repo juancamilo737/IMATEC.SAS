@@ -1,0 +1,69 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Remisión {{ r.numero }} — IMATEC{% endblock %}
+{% block encabezado %}Remisión {{ r.numero }}{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+{% if panel %}
+  {% if r.estado == 'entregada' and not r.facturas %}
+  <form method="post" action="/admin/remisiones/facturar" style="margin:0">
+    <input type="hidden" name="remision_id" value="{{ r.id }}">
+    <button class="btn btn-sm btn-oscuro">Facturar</button></form>
+  {% endif %}
+  <a href="/admin/despachos" class="btn btn-sm btn-claro">Despachos</a>
+  <a href="/admin/remisiones" class="btn btn-sm btn-claro">Volver</a>
+{% else %}
+  <a href="/portal/remisiones" class="btn btn-sm btn-claro">Volver</a>
+{% endif %}
+{% endblock %}
+
+{% block contenido %}
+<div class="doc">
+  {% with clase='Remisión', numero=r.numero,
+          meta='Fecha: ' ~ r.fecha ~ '<br>Estado: ' ~ r.estado|capitalize ~
+               ('<br>Cotización: ' ~ r.cotizacion.numero if r.cotizacion else '') ~
+               ('<br>O. compra: ' ~ r.orden_compra if r.orden_compra else '') %}
+    {% include "docs/_encabezado.html" %}
+  {% endwith %}
+
+  {% with cl=r.cliente, titulo_2='Entrega',
+          cuerpo_2='<strong>Dirección:</strong> ' ~ (r.direccion_entrega or r.cliente.direccion) ~
+                   '<br><strong>Ciudad:</strong> ' ~ (r.ciudad_entrega or r.cliente.ciudad) ~
+                   '<br><strong>Transportador:</strong> ' ~ (r.transportador or '—') ~
+                   ('<br><strong>Placa:</strong> ' ~ r.placa if r.placa else '') ~
+                   ('<br><strong>Conductor:</strong> ' ~ r.conductor if r.conductor else '') %}
+    {% include "docs/_cliente.html" %}
+  {% endwith %}
+
+  <table class="doc-items">
+    <thead><tr><th style="width:26px">#</th><th>Descripción</th>
+      <th class="num">Cantidad</th><th class="num">Unidad</th><th>Observación</th></tr></thead>
+    <tbody>
+    {% for i in r['items'] %}
+      <tr><td>{{ loop.index }}</td><td><strong>{{ i.descripcion }}</strong></td>
+          <td class="num">{{ i.cantidad|num }}</td><td class="num">{{ i.unidad }}</td>
+          <td>{{ i.observacion or '' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="doc-notas" style="margin-bottom:10px">
+    {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
+    <h5>Importante</h5>
+    <p>Este documento acredita la entrega de los bienes descritos. <strong>No es una factura
+    de venta</strong> y no presta mérito ejecutivo. Quien recibe declara haber revisado
+    cantidades y estado de la mercancía al momento de la entrega.</p>
+  </div>
+
+  <div class="doc-firmas">
+    <div class="doc-firma">{{ r.elaborado_por or empresa.razon_social }}<br>
+      <span class="silencio">Entrega — {{ empresa.razon_social }}</span></div>
+    <div class="doc-firma">{{ r.recibido_por or '' }}<br>
+      <span class="silencio">Recibe conforme — Nombre, C.C. y fecha</span></div>
+  </div>
+
+  <div class="doc-pie">
+    {{ empresa.razon_social }} · {{ empresa.direccion }}, {{ empresa.ciudad }} ·
+    {{ empresa.telefono }}{% if r.fecha_entrega %} · Entregada el {{ r.fecha_entrega }}{% endif %}
+  </div>
+</div>
+{% endblock %}

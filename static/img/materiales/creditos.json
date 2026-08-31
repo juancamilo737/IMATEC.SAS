@@ -1,0 +1,26 @@
+{
+ "materiales/galvanizada.jpg": {
+  "titulo": "Steel pipe.jpg",
+  "licencia": "CC BY-SA 4.0",
+  "autor": "Sắt Thép Biên Hòa",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Steel_pipe.jpg"
+ },
+ "materiales/acero-carbon.jpg": {
+  "titulo": "StackOfPipes.jpg",
+  "licencia": "CC0",
+  "autor": "Raysonho @ Open Grid Scheduler",
+  "fuente": "https://commons.wikimedia.org/wiki/File:StackOfPipes.jpg"
+ },
+ "materiales/acero-carbon-2.jpg": {
+  "titulo": "Stack of pipes in Finland.jpg",
+  "licencia": "CC BY-SA 3.0",
+  "autor": "Antti Leppänen",
+  "fuente": "https://commons.wikimedia.org/wiki/File:Stack_of_pipes_in_Finland.jpg"
+ },
+ "materiales/inoxidable.jpg": {
+  "titulo": "304 STAINLESS STEEL PIPE.png",
+  "licencia": "CC BY-SA 4.0",
+  "autor": "Libowei111",
+  "fuente": "https://commons.wikimedia.org/wiki/File:304_STAINLESS_STEEL_PIPE.png"
+ }
+}

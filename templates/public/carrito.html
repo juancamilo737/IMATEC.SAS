@@ -1,0 +1,137 @@
+{% extends "base_public.html" %}
+{% block titulo %}Mi solicitud de cotización — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div class="kicker">Solicitud de cotización</div>
+      <h2>Lo que va a pedir</h2>
+      <p>Revise las cantidades, agregue las medidas de cada ítem y envíenos la solicitud.
+         Le respondemos con una cotización formal sin costo.</p>
+    </div>
+
+    <div id="carrito-vacio" class="vacio oculto" style="background:var(--gris-100);border-radius:6px">
+      <b>Su solicitud está vacía</b>
+      <p>Agregue productos desde el catálogo para pedir una cotización.</p>
+      <a href="/catalogo" class="btn" style="margin-top:1rem">Ir al catálogo</a>
+    </div>
+
+    <div id="carrito-contenido">
+      <div class="tarjeta">
+        <div class="tabla-envoltura">
+          <table class="datos">
+            <thead><tr>
+              <th style="width:44%">Producto</th><th style="width:110px">Cantidad</th>
+              <th>Medidas / detalles</th><th style="width:60px"></th>
+            </tr></thead>
+            <tbody id="carrito-filas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="rejilla rejilla-2" style="gap:2.5rem;align-items:start">
+        <div>
+          <div class="tarjeta">
+            <div class="tarjeta-cab"><h3>Sus datos</h3></div>
+            <div class="tarjeta-cuerpo">
+              <form method="post" action="/carrito/enviar" id="form-pedido">
+                <input type="hidden" name="items_json" id="items_json">
+                {% if usuario and usuario.cliente_id %}
+                <div class="aviso aviso-info" style="margin-bottom:1.2rem">
+                  Enviando como <strong>{{ usuario.nombre }}</strong>.
+                  La solicitud quedará registrada en su perfil de cliente.
+                </div>
+                {% endif %}
+                <div class="campo">
+                  <label>Nombre de contacto</label>
+                  <input type="text" name="nombre_contacto" required
+                         value="{{ usuario.nombre if usuario else '' }}">
+                </div>
+                <div class="campo">
+                  <label>Empresa</label>
+                  <input type="text" name="empresa" value="{{ cliente.razon_social if cliente else '' }}">
+                </div>
+                <div class="fila-2">
+                  <div class="campo">
+                    <label>Email</label>
+                    <input type="email" name="email" required value="{{ usuario.email if usuario else '' }}">
+                  </div>
+                  <div class="campo">
+                    <label>Teléfono</label>
+                    <input type="tel" name="telefono" required
+                           value="{{ cliente.telefono if cliente else '' }}">
+                  </div>
+                </div>
+                <div class="campo">
+                  <label>Notas para IMATEC</label>
+                  <textarea name="notas" placeholder="Plazo requerido, sitio de instalación, condiciones especiales…"></textarea>
+                </div>
+                <button type="submit" class="btn btn-lg" style="width:100%">Enviar solicitud de cotización</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="tarjeta">
+            <div class="tarjeta-cab"><h3>Qué pasa después</h3></div>
+            <div class="tarjeta-cuerpo">
+              <ol style="padding-left:1.2rem;line-height:1.9;margin:0">
+                <li>Recibimos su solicitud y revisamos medidas y materiales.</li>
+                <li>Le enviamos la <strong>cotización formal</strong> con precios, tiempo de entrega y forma de pago.</li>
+                <li>Al aprobarla, fabricamos y generamos la <strong>remisión</strong> del despacho.</li>
+                <li>Al entregar, emitimos su <strong>factura electrónica</strong>.</li>
+              </ol>
+              <p class="silencio" style="margin-top:1.2rem;margin-bottom:0">
+                Los precios del catálogo son de referencia. El valor definitivo se confirma en la
+                cotización según medidas, calibre y acabado.
+              </p>
+            </div>
+          </div>
+          <button class="btn btn-claro btn-sm" onclick="if(confirm('¿Vaciar la solicitud?'))vaciarCarrito()">
+            Vaciar solicitud</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function pintarCarrito(){
+  const items = leerCarrito();
+  const cuerpo = document.getElementById('carrito-filas');
+  document.getElementById('carrito-vacio').classList.toggle('oculto', items.length > 0);
+  document.getElementById('carrito-contenido').classList.toggle('oculto', items.length === 0);
+  cuerpo.innerHTML = items.map(i => `
+    <tr>
+      <td>
+        <strong>${i.nombre}</strong>
+        <div class="silencio">${i.sku || ''} ${i.categoria ? '· ' + i.categoria : ''}</div>
+      </td>
+      <td><input type="number" min="1" value="${i.cantidad}" style="width:90px"
+            onchange="actualizarCantidad(${i.id}, this.value)"></td>
+      <td><input type="text" value="${(i.observacion||'').replace(/"/g,'&quot;')}"
+            placeholder="Medidas, calibre, acabado…"
+            onchange="guardarObs(${i.id}, this.value)"></td>
+      <td class="acc"><button class="btn btn-sm btn-claro"
+            onclick="quitarDelCarrito(${i.id})" title="Quitar">✕</button></td>
+    </tr>`).join('');
+  document.getElementById('items_json').value = JSON.stringify(items);
+}
+function guardarObs(id, texto){
+  const items = leerCarrito();
+  const it = items.find(x => x.id === id);
+  if (it){ it.observacion = texto; guardarCarrito(items); }
+  document.getElementById('items_json').value = JSON.stringify(leerCarrito());
+}
+document.getElementById('form-pedido').addEventListener('submit', function(e){
+  const items = leerCarrito();
+  if (!items.length){ e.preventDefault(); alert('Agregue al menos un producto.'); return; }
+  document.getElementById('items_json').value = JSON.stringify(items);
+  try { localStorage.removeItem(CARRITO_KEY); } catch(err){}
+});
+document.addEventListener('DOMContentLoaded', pintarCarrito);
+</script>
+{% endblock %}

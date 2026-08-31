@@ -1,0 +1,15 @@
+<div class="doc-partes">
+  <div class="doc-parte">
+    <h5>Cliente</h5>
+    <strong>{{ cl.razon_social }}</strong><br>
+    {{ cl.tipo_documento }} {{ cl.documento }}{% if cl.dv %}-{{ cl.dv }}{% endif %}<br>
+    {{ cl.direccion }}<br>
+    {{ cl.ciudad }}, {{ cl.departamento }}<br>
+    {% if cl.telefono %}Tel: {{ cl.telefono }}<br>{% endif %}
+    {% if cl.email %}{{ cl.email }}{% endif %}
+  </div>
+  <div class="doc-parte">
+    <h5>{{ titulo_2 }}</h5>
+    {{ cuerpo_2|safe }}
+  </div>
+</div>

@@ -1,0 +1,36 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Bitácora — IMATEC{% endblock %}
+{% block encabezado %}Bitácora y mensajes{% endblock %}
+{% block contenido %}
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Mensajes del formulario web</h3>
+    <span class="tag" style="margin-left:auto">{{ mensajes|length }}</span></div>
+  {% if mensajes %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Fecha</th><th>Nombre</th><th>Contacto</th><th>Mensaje</th></tr></thead>
+    <tbody>{% for m in mensajes %}
+      <tr><td class="silencio">{{ m.fecha }}</td>
+          <td><strong>{{ m.nombre }}</strong></td>
+          <td class="silencio">{{ m.email }}<br>{{ m.telefono }}</td>
+          <td>{{ m.mensaje }}</td></tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}<div class="vacio"><b>Sin mensajes</b>
+    <p>Los mensajes del formulario de contacto de la web aparecen aquí.</p></div>{% endif %}
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Bitácora del sistema</h3>
+    <span class="silencio" style="margin-left:auto">Últimos 400 registros</span></div>
+  {% if registros %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th>
+      <th>Referencia</th><th>Detalle</th></tr></thead>
+    <tbody>{% for r in registros %}
+      <tr><td class="silencio">{{ r.fecha }}</td><td>{{ r.usuario }}</td>
+          <td><span class="tag">{{ r.accion }}</span></td>
+          <td class="silencio">{{ r.entidad }}</td><td>{{ r.referencia }}</td>
+          <td class="silencio">{{ r.detalle }}</td></tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}<div class="vacio"><b>Sin registros</b></div>{% endif %}
+</div>
+{% endblock %}

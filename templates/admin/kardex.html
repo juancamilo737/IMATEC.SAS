@@ -1,0 +1,45 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Kardex — IMATEC{% endblock %}
+{% block encabezado %}Kardex de materiales{% endblock %}
+{% block acciones %}<a href="/admin/inventario" class="btn btn-sm btn-claro">Ir al inventario</a>{% endblock %}
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Material</label>
+    <select name="material_id"><option value="">Todos los materiales</option>
+      {% for m in materiales %}
+      <option value="{{ m.id }}" {{ 'selected' if material_id and m.id|string == material_id|string }}>
+        {{ m.sku }} — {{ m.descripcion }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-sm btn-claro">Ver</button>
+  <a href="/admin/kardex" class="btn btn-sm btn-claro">Todos</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ movimientos|length }} movimiento(s)</h3>
+    <span class="silencio" style="margin-left:auto">Últimos 400</span></div>
+  {% if movimientos %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Fecha</th><th>ID Artículo</th><th>Descripción</th><th>Movimiento</th>
+      <th class="num">Cantidad</th><th class="num">Saldo</th><th>Motivo</th>
+      <th>Documento</th><th>Usuario</th></tr></thead>
+    <tbody>{% for m in movimientos %}
+      <tr>
+        <td class="silencio">{{ m.fecha }}</td>
+        <td><strong>{{ m.sku }}</strong></td>
+        <td>{{ m.descripcion }}</td>
+        <td><span class="tag {{ 'tag-ok' if m.tipo=='entrada' else ('tag-error' if m.tipo=='salida' else 'tag-alerta') }}">
+          {{ m.tipo|capitalize }}</span></td>
+        <td class="num" style="color:{{ 'var(--ok)' if m.cantidad>0 else 'var(--error)' }}">
+          <strong>{{ '+' if m.cantidad > 0 }}{{ m.cantidad|num }}</strong></td>
+        <td class="num">{{ m.saldo|num }} <span class="silencio">{{ m.unidad }}</span></td>
+        <td class="silencio">{{ m.motivo or '—' }}</td>
+        <td class="silencio">{{ m.documento or '—' }}</td>
+        <td class="silencio">{{ m.usuario }}</td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Sin movimientos registrados</b>
+    <p>Cada entrada, salida o ajuste de inventario queda registrado aquí.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

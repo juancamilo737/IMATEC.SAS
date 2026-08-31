@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block titulo %}Panel — IMATEC S.A.S.{% endblock %}</title>
+<link rel="icon" href="/static/img/favicon.png">
+<link rel="stylesheet" href="/static/css/imatec.css">
+</head>
+<body>
+<div class="panel">
+  <aside class="lateral" id="lateral">
+    <a href="{{ '/admin' if es_staff else '/portal' }}" class="lateral-logo">
+      <img src="/static/img/logo-imatec-claro.png" alt="IMATEC">
+      <span><b>IMATEC</b><span>{{ 'Gestión' if es_staff else 'Portal cliente' }}</span></span>
+    </a>
+
+    {% if es_staff %}
+      <div class="lateral-grupo">Resumen</div>
+      <a href="/admin" class="{{ 'activo' if seccion=='inicio' }}"><span class="ic">▦</span> Dashboard</a>
+      <a href="/admin/pedidos" class="{{ 'activo' if seccion=='pedidos' }}"><span class="ic">✉</span> Solicitudes web
+        {% if nuevos_pedidos %}<span class="cont">{{ nuevos_pedidos }}</span>{% endif %}</a>
+
+      <div class="lateral-grupo">Ventas</div>
+      <a href="/admin/cotizaciones" class="{{ 'activo' if seccion=='cotizaciones' }}"><span class="ic">◫</span> Cotizaciones</a>
+      <a href="/admin/remisiones" class="{{ 'activo' if seccion=='remisiones' }}"><span class="ic">⇗</span> Remisiones</a>
+      <a href="/admin/despachos" class="{{ 'activo' if seccion=='despachos' }}"><span class="ic">⛟</span> Despachos</a>
+      <a href="/admin/facturas" class="{{ 'activo' if seccion=='facturas' }}"><span class="ic">$</span> Facturas</a>
+      <a href="/admin/clientes" class="{{ 'activo' if seccion=='clientes' }}"><span class="ic">☺</span> Clientes</a>
+
+      <div class="lateral-grupo">Operación</div>
+      <a href="/admin/inventario" class="{{ 'activo' if seccion=='inventario' }}"><span class="ic">▤</span> Inventario
+        {% if bajo_minimo %}<span class="cont">{{ bajo_minimo }}</span>{% endif %}</a>
+      <a href="/admin/kardex" class="{{ 'activo' if seccion=='kardex' }}"><span class="ic">⇅</span> Kardex</a>
+      <a href="/admin/catalogo" class="{{ 'activo' if seccion=='catalogo' }}"><span class="ic">▣</span> Catálogo web</a>
+
+      <div class="lateral-grupo">Sistema</div>
+      <a href="/admin/excel" class="{{ 'activo' if seccion=='excel' }}"><span class="ic">▧</span> Excel y respaldo</a>
+      <a href="/admin/usuarios" class="{{ 'activo' if seccion=='usuarios' }}"><span class="ic">⚿</span> Usuarios</a>
+      <a href="/admin/configuracion" class="{{ 'activo' if seccion=='configuracion' }}"><span class="ic">⚙</span> Configuración</a>
+      <a href="/admin/bitacora" class="{{ 'activo' if seccion=='bitacora' }}"><span class="ic">≡</span> Bitácora</a>
+    {% else %}
+      <div class="lateral-grupo">Mi cuenta</div>
+      <a href="/portal" class="{{ 'activo' if seccion=='inicio' }}"><span class="ic">▦</span> Resumen</a>
+      <a href="/portal/solicitudes" class="{{ 'activo' if seccion=='pedidos' }}"><span class="ic">✉</span> Mis solicitudes</a>
+      <a href="/portal/cotizaciones" class="{{ 'activo' if seccion=='cotizaciones' }}"><span class="ic">◫</span> Cotizaciones</a>
+      <a href="/portal/remisiones" class="{{ 'activo' if seccion=='remisiones' }}"><span class="ic">⇗</span> Remisiones</a>
+      <a href="/portal/facturas" class="{{ 'activo' if seccion=='facturas' }}"><span class="ic">$</span> Facturas</a>
+      <a href="/portal/perfil" class="{{ 'activo' if seccion=='perfil' }}"><span class="ic">☺</span> Mis datos</a>
+
+      <div class="lateral-grupo">Comprar</div>
+      <a href="/catalogo"><span class="ic">▣</span> Catálogo</a>
+      <a href="/carrito"><span class="ic">🛒</span> Mi solicitud</a>
+    {% endif %}
+
+    <div class="lateral-grupo">&nbsp;</div>
+    <a href="/"><span class="ic">↩</span> Ir al sitio web</a>
+    <a href="/salir"><span class="ic">⏻</span> Cerrar sesión</a>
+  </aside>
+
+  <main class="principal">
+    <div class="barra-panel">
+      <button class="menu-btn no-imprimir"
+        onclick="document.getElementById('lateral').classList.toggle('abierta')">☰</button>
+      <h1>{% block encabezado %}Panel{% endblock %}</h1>
+      <div class="acciones">
+        {% block acciones %}{% endblock %}
+        <div class="usuario-chip">
+          <div class="avatar">{{ usuario.nombre[:1]|upper }}</div>
+          <div>
+            <div style="font-weight:500;line-height:1.2">{{ usuario.nombre }}</div>
+            <div class="silencio" style="font-size:.74rem">{{ usuario.rol|capitalize }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="contenido">
+      {% if aviso %}<div class="aviso aviso-{{ aviso_tipo or 'ok' }}">{{ aviso|safe }}</div>{% endif %}
+      {% block contenido %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

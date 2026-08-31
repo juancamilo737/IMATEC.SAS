@@ -1,0 +1,46 @@
+{% extends "base_public.html" %}
+{% block titulo %}Catálogo de productos — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="seccion" style="padding-bottom:2rem">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div class="kicker">Catálogo</div>
+      <h2>{{ categoria_actual.nombre if categoria_actual else 'Todos nuestros productos' }}</h2>
+      <p>{{ categoria_actual.descripcion if categoria_actual else
+            'Fabricamos a la medida en acero inoxidable AISI 304, acero al carbón y acero estructural. Agregue lo que necesite a su solicitud y le enviamos la cotización.' }}</p>
+    </div>
+
+    <form method="get" action="/catalogo" style="margin-bottom:1.5rem;max-width:460px">
+      <div style="display:flex;gap:.6rem">
+        <input type="search" name="q" value="{{ q or '' }}" placeholder="Buscar producto…">
+        {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+        <button class="btn btn-claro" type="submit">Buscar</button>
+      </div>
+    </form>
+
+    <div class="filtros">
+      <a href="/catalogo{% if q %}?q={{ q }}{% endif %}" class="filtro {{ 'activo' if not cat }}">Todos</a>
+      {% for c in categorias %}
+      <a href="/catalogo?cat={{ c.slug }}{% if q %}&q={{ q }}{% endif %}"
+         class="filtro {{ 'activo' if cat==c.slug }}">{{ c.nombre }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section style="padding-bottom:5rem">
+  <div class="contenedor">
+    {% if productos %}
+    <div class="rejilla rejilla-3">
+      {% for p in productos %}{% include "public/_tarjeta_producto.html" %}{% endfor %}
+    </div>
+    {% else %}
+    <div class="vacio" style="background:var(--gris-100);border-radius:6px">
+      <b>No encontramos productos con ese criterio</b>
+      <p>Fabricamos bajo plano y bajo medida. Escríbanos y le cotizamos lo que necesita.</p>
+      <a href="/contacto" class="btn" style="margin-top:1rem">Solicitar fabricación especial</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

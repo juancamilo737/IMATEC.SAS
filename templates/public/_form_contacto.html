@@ -1,0 +1,21 @@
+<form method="post" action="/contacto">
+  <div class="campo">
+    <label for="c-nombre">Nombre</label>
+    <input type="text" id="c-nombre" name="nombre" required placeholder="Su nombre completo">
+  </div>
+  <div class="fila-2">
+    <div class="campo">
+      <label for="c-email">Email</label>
+      <input type="email" id="c-email" name="email" placeholder="correo@empresa.com">
+    </div>
+    <div class="campo">
+      <label for="c-tel">Teléfono</label>
+      <input type="tel" id="c-tel" name="telefono" placeholder="300 000 0000">
+    </div>
+  </div>
+  <div class="campo">
+    <label for="c-msg">Mensaje</label>
+    <textarea id="c-msg" name="mensaje" required placeholder="Cuéntenos qué necesita fabricar o montar"></textarea>
+  </div>
+  <button type="submit" class="btn" style="width:100%">Enviar</button>
+</form>

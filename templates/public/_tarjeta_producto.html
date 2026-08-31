@@ -1,0 +1,34 @@
+<article class="producto">
+  <a href="/producto/{{ p.slug }}" class="producto-img">
+    {% if p.imagen %}
+      <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }}" loading="lazy">
+    {% else %}
+      <div class="sin-foto">{{ p.categoria }}<small>Foto próximamente</small></div>
+    {% endif %}
+  </a>
+  <div class="producto-cuerpo">
+    <div class="producto-cat">{{ p.categoria }}</div>
+    <h3><a href="/producto/{{ p.slug }}">{{ p.nombre }}</a></h3>
+    <div class="resumen">{{ p.descripcion }}</div>
+    <div class="producto-pie">
+      {% if p.grupo_sku %}
+        <span>
+          <span class="precio-cotizar">{{ p.grupo.total }} diámetros</span>
+          <span class="producto-medidas">
+            {% if p.grupo.disponibles %}
+              <span class="tag tag-ok">{{ p.grupo.disponibles }} en bodega</span>
+            {% else %}<span class="tag">Sobre pedido</span>{% endif %}
+          </span>
+        </span>
+        <a href="/producto/{{ p.slug }}" class="btn btn-sm">Ver medidas</a>
+      {% else %}
+        {% if p.precio and p.precio > 0 %}
+          <span class="precio">{{ p.precio|cop }}</span>
+        {% else %}
+          <span class="precio-cotizar">Precio a cotizar</span>
+        {% endif %}
+        <button class="btn btn-sm" onclick='agregarAlCarrito({{ p|tarjeta_json }},1,"")'>Agregar</button>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,62 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Nueva remisión — IMATEC{% endblock %}
+{% block encabezado %}Nueva remisión{% endblock %}
+{% block acciones %}<a href="/admin/remisiones" class="btn btn-sm btn-claro">Volver</a>{% endblock %}
+
+{% block contenido %}
+<form method="post" action="/admin/remisiones/guardar" onsubmit="return prepararEnvio(event)">
+  <input type="hidden" name="items_json" id="items_json">
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos de la remisión</h3></div>
+    <div class="tarjeta-cuerpo">
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2">
+          <label>Cliente *</label>
+          <select name="cliente_id" required>
+            <option value="">— Seleccione el cliente —</option>
+            {% for cl in clientes %}
+            <option value="{{ cl.id }}" {{ 'selected' if cliente_id and cl.id|string == cliente_id|string }}>
+              {{ cl.razon_social }} · {{ cl.documento }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="campo"><label>Fecha</label>
+          <input type="date" name="fecha" value="{{ hoy }}"></div>
+        <div class="campo"><label>Orden de compra</label>
+          <input type="text" name="orden_compra"></div>
+      </div>
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2"><label>Dirección de entrega</label>
+          <input type="text" name="direccion_entrega" placeholder="Si se deja vacía se usa la del cliente"></div>
+        <div class="campo"><label>Ciudad</label>
+          <input type="text" name="ciudad_entrega" value="Cali"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label>Transportador</label><input type="text" name="transportador"></div>
+        <div class="campo"><label>Placa</label><input type="text" name="placa"></div>
+        <div class="campo"><label>Conductor</label><input type="text" name="conductor"></div>
+      </div>
+      <div class="campo"><label>Observaciones</label><textarea name="observaciones"></textarea></div>
+    </div>
+  </div>
+
+  {% with con_impuestos = false %}{% include "admin/_editor_items.html" %}{% endwith %}
+
+  <div style="display:flex;gap:.7rem;justify-content:flex-end">
+    <a href="/admin/remisiones" class="btn btn-claro">Cancelar</a>
+    <button type="submit" class="btn btn-lg">Crear remisión</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/editor.js"></script>
+<script>
+const PRODUCTOS = {{ productos|tojson }};
+IVA_DEFECTO = {{ iva_defecto }};
+CON_IMPUESTOS = false;
+ITEMS = [];
+document.addEventListener('DOMContentLoaded', () => { agregarFila(); pintarItems(); });
+</script>
+{% endblock %}

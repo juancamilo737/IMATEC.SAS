@@ -1,0 +1,45 @@
+{% extends "base_public.html" %}
+{% block titulo %}Créditos de imágenes — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor" style="max-width:820px">
+    <div class="titulo-seccion">
+      <div class="kicker">Créditos</div>
+      <h2>Créditos de imágenes</h2>
+      <p>Las fotografías de nuestros productos fabricados son propiedad de IMATEC S.A.S.
+         Las fotografías de materiales de bodega provienen de Wikimedia Commons y se usan
+         bajo las licencias que se indican a continuación.</p>
+    </div>
+
+    <div class="tarjeta">
+      <div class="tabla-envoltura">
+        <table class="datos">
+          <thead><tr><th>Imagen</th><th>Autor</th><th>Licencia</th><th>Fuente</th></tr></thead>
+          <tbody>
+          {% for archivo, c in creditos.items() %}
+            <tr>
+              <td style="width:90px"><img src="/static/img/{{ archivo }}" alt="{{ c.titulo }}"
+                   style="width:74px;height:56px;object-fit:cover;border-radius:4px"></td>
+              <td>{{ c.autor }}</td>
+              <td><span class="tag">{{ c.licencia }}</span></td>
+              <td><a href="{{ c.fuente }}" target="_blank" rel="noopener"
+                     style="border-bottom:1px solid var(--amarillo);word-break:break-all">
+                  {{ c.titulo }}</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="silencio">
+      Las licencias Creative Commons citadas permiten el uso de estas imágenes, incluido el uso
+      comercial, siempre que se dé crédito al autor y se enlace la licencia. Las imágenes
+      marcadas <strong>CC0</strong> están liberadas al dominio público y no exigen atribución.
+      Consulte los términos completos en
+      <a href="https://creativecommons.org/licenses/" target="_blank" rel="noopener"
+         style="border-bottom:1px solid var(--amarillo)">creativecommons.org/licenses</a>.
+    </p>
+  </div>
+</section>
+{% endblock %}

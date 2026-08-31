@@ -1,0 +1,76 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Excel y respaldo — IMATEC{% endblock %}
+{% block encabezado %}Excel y respaldo{% endblock %}
+{% block acciones %}
+<form method="post" action="/admin/excel/generar" style="margin:0">
+  <button class="btn btn-sm">Regenerar ahora</button>
+</form>
+{% endblock %}
+
+{% block contenido %}
+<div class="aviso aviso-info">
+  Los dos archivos se regeneran <strong>automáticamente</strong> cada vez que se guarda un
+  documento o se mueve el inventario. Aquí puede descargarlos o forzar la regeneración.
+</div>
+
+<div class="rejilla rejilla-2" style="align-items:start">
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>1 · Control operativo</h3>
+      <span class="tag tag-amarillo" style="margin-left:auto">Imagen a seguir</span></div>
+    <div class="tarjeta-cuerpo">
+      <p><strong>CONTROL_IMATEC.xlsx</strong> es la réplica del Excel que ustedes ya manejan.
+      La hoja <em>«Inventario Imatec»</em> conserva el mismo título, las mismas columnas,
+      las mismas listas desplegables, las fuentes Montserrat y Roboto, y la columna
+      <em>Estado</em> calculada por la misma fórmula.</p>
+      <p class="silencio">Hojas incluidas:</p>
+      <ul style="line-height:1.9;margin-top:0">
+        <li><strong>Resumen</strong> — cifras del día</li>
+        <li><strong>Inventario Imatec</strong> — formato idéntico al suyo</li>
+        <li><strong>Clientes</strong>, <strong>Cotizaciones</strong>, <strong>Remisiones</strong></li>
+        <li><strong>Facturas</strong>, <strong>Despachos</strong>, <strong>Kardex</strong>,
+            <strong>Catálogo Web</strong></li>
+      </ul>
+      {% if control %}
+      <div style="background:var(--gris-100);padding:1rem;border-radius:6px;margin:1.2rem 0">
+        <div class="silencio">Última generación</div>
+        <strong>{{ control.fecha }}</strong> · {{ control.kb }} KB
+      </div>
+      {% endif %}
+      <a href="/admin/excel/descargar/control" class="btn" style="width:100%">Descargar CONTROL_IMATEC.xlsx</a>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>2 · Respaldo completo</h3>
+      <span class="tag" style="margin-left:auto">Copia de seguridad</span></div>
+    <div class="tarjeta-cuerpo">
+      <p><strong>RESPALDO_IMATEC.xlsx</strong> es el volcado técnico de toda la base de datos:
+      una hoja por cada tabla, con todos los campos. Sirve para reconstruir la información
+      si algo llegara a fallar.</p>
+      <p class="silencio">No se edita a mano: es la copia fiel de lo que hay en el sistema.
+      Las contraseñas nunca se exportan.</p>
+      {% if respaldo %}
+      <div style="background:var(--gris-100);padding:1rem;border-radius:6px;margin:1.2rem 0">
+        <div class="silencio">Última generación</div>
+        <strong>{{ respaldo.fecha }}</strong> · {{ respaldo.kb }} KB
+      </div>
+      {% endif %}
+      <a href="/admin/excel/descargar/respaldo" class="btn btn-oscuro" style="width:100%">
+        Descargar RESPALDO_IMATEC.xlsx</a>
+    </div>
+  </div>
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Copia de la base de datos</h3></div>
+  <div class="tarjeta-cuerpo">
+    <p>Toda la información vive en un solo archivo: <code>data/imatec.db</code> ({{ bd_kb }} KB).
+      Guardar una copia de ese archivo es guardar <strong>todo</strong> el sistema.</p>
+    <div class="aviso aviso-alerta">
+      <strong>Recomendación:</strong> descargue esta copia una vez por semana y guárdela en
+      una USB o en la nube. Es el respaldo más completo que existe.
+    </div>
+    <a href="/admin/excel/base-datos" class="btn btn-claro">Descargar copia de la base de datos</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Catálogo web — IMATEC{% endblock %}
+{% block encabezado %}Catálogo de la página web{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm" onclick="nuevoProducto()">+ Nuevo producto</button>
+<a href="/catalogo" target="_blank" class="btn btn-sm btn-claro">Ver en la web ↗</a>
+{% endblock %}
+
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Nombre o SKU…"></div>
+  <button class="btn btn-sm btn-claro">Buscar</button>
+  <a href="/admin/catalogo" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="aviso aviso-info">
+  Los productos sin precio aparecen en la web como <strong>«Precio a cotizar»</strong>.
+  Ponga el precio cuando quiera mostrarlo públicamente.
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ productos|length }} producto(s)</h3></div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th></th><th>SKU</th><th>Producto</th><th>Categoría</th><th>Material</th>
+      <th class="num">Precio</th><th>Destacado</th><th>Publicado</th><th></th></tr></thead>
+    <tbody>{% for p in productos %}
+      <tr>
+        <td style="width:56px">{% if p.imagen %}
+          <img src="/static/img/{{ p.imagen }}" alt="" style="width:44px;height:44px;
+               object-fit:cover;border-radius:4px">{% endif %}</td>
+        <td class="mono">{{ p.sku }}</td>
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td class="silencio">{{ p.categoria }}</td>
+        <td class="silencio">{{ p.material }}</td>
+        <td class="num">{% if p.precio > 0 %}{{ p.precio|cop }}{% else %}
+          <span class="tag">A cotizar</span>{% endif %}</td>
+        <td>{% if p.destacado %}<span class="tag tag-amarillo">Destacado</span>{% endif %}</td>
+        <td>{% if p.activo %}<span class="tag tag-ok">Sí</span>
+            {% else %}<span class="tag tag-error">No</span>{% endif %}</td>
+        <td class="acc">
+          <a href="/producto/{{ p.slug }}" target="_blank" class="btn btn-sm btn-claro">↗</a>
+          <button class="btn btn-sm btn-claro" onclick='editarProducto({{ p|tojson }})'>✎</button>
+        </td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+</div>
+
+<div class="modal-fondo oculto" id="m-prod">
+  <div class="modal">
+    <form method="post" action="/admin/catalogo/guardar" enctype="multipart/form-data">
+      <div class="modal-cab"><h3 id="mp-titulo">Nuevo producto</h3>
+        <button type="button" onclick="cerrar('m-prod')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="producto_id" id="p-id">
+        <div class="fila-2">
+          <div class="campo"><label>SKU *</label><input type="text" name="sku" id="p-sku" required></div>
+          <div class="campo"><label>Categoría *</label>
+            <select name="categoria_id" id="p-cat" required>
+              {% for c in categorias %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="campo"><label>Nombre *</label><input type="text" name="nombre" id="p-nombre" required></div>
+        <div class="campo"><label>Descripción</label><textarea name="descripcion" id="p-desc"></textarea></div>
+        <div class="campo"><label>Especificaciones</label>
+          <textarea name="especificaciones" id="p-espec"
+            placeholder="Separe cada punto con · (por ejemplo: Lámina AISI 304 · Patas en tubo de 1 1/2&quot;)"></textarea>
+          <div class="ayuda">Cada punto separado por «·» se muestra como una viñeta en la web.</div></div>
+        <div class="fila">
+          <div class="campo"><label>Material</label><input type="text" name="material" id="p-material"></div>
+          <div class="campo"><label>Unidad</label><input type="text" name="unidad" id="p-unidad" value="UND"></div>
+          <div class="campo"><label>Días de entrega</label>
+            <input type="number" name="dias_entrega" id="p-dias" value="15"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label>Precio (0 = a cotizar)</label>
+            <input type="number" name="precio" id="p-precio" value="0" step="1000"></div>
+          <div class="campo"><label>IVA %</label>
+            <input type="number" name="iva_pct" id="p-iva" value="19" step="0.5"></div>
+        </div>
+        <div class="campo"><label>Imagen</label>
+          <input type="file" name="imagen" accept=".jpg,.jpeg,.png,.webp">
+          <div class="ayuda">Deje vacío para conservar la imagen actual.</div></div>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+          <label class="check"><input type="checkbox" name="destacado" value="1" id="p-dest">
+            <span>Mostrar como destacado en la página de inicio</span></label>
+          <label class="check"><input type="checkbox" name="activo" value="1" id="p-activo" checked>
+            <span>Publicado en la web</span></label>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-prod')">Cancelar</button>
+        <button type="submit" class="btn">Guardar producto</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function cerrar(id){ document.getElementById(id).classList.add('oculto'); }
+function nuevoProducto(){
+  document.getElementById('mp-titulo').textContent = 'Nuevo producto';
+  ['p-id','p-sku','p-nombre','p-desc','p-espec','p-material'].forEach(i =>
+    document.getElementById(i).value = '');
+  document.getElementById('p-unidad').value = 'UND';
+  document.getElementById('p-precio').value = 0;
+  document.getElementById('p-iva').value = 19;
+  document.getElementById('p-dias').value = 15;
+  document.getElementById('p-dest').checked = false;
+  document.getElementById('p-activo').checked = true;
+  document.getElementById('m-prod').classList.remove('oculto');
+}
+function editarProducto(p){
+  document.getElementById('mp-titulo').textContent = 'Editar ' + p.nombre;
+  const v = {'p-id':p.id,'p-sku':p.sku,'p-nombre':p.nombre,'p-desc':p.descripcion,
+    'p-espec':p.especificaciones,'p-material':p.material,'p-unidad':p.unidad,
+    'p-precio':p.precio,'p-iva':p.iva_pct,'p-dias':p.dias_entrega};
+  for (const k in v) document.getElementById(k).value = (v[k] === null ? '' : v[k]);
+  document.getElementById('p-cat').value = p.categoria_id;
+  document.getElementById('p-dest').checked = !!p.destacado;
+  document.getElementById('p-activo').checked = !!p.activo;
+  document.getElementById('m-prod').classList.remove('oculto');
+}
+document.querySelectorAll('.modal-fondo').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('oculto'); }));
+</script>
+{% endblock %}

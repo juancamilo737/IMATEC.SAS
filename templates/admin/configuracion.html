@@ -1,0 +1,129 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Configuración — IMATEC{% endblock %}
+{% block encabezado %}Configuración{% endblock %}
+{% block contenido %}
+<form method="post" action="/admin/configuracion/guardar">
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos de la empresa</h3>
+      <div class="acciones"><button class="btn btn-sm">Guardar cambios</button></div></div>
+    <div class="tarjeta-cuerpo">
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2"><label>Razón social</label>
+          <input type="text" name="empresa.razon_social" value="{{ e.razon_social }}"></div>
+        <div class="campo"><label>NIT</label>
+          <input type="text" name="empresa.nit" value="{{ e.nit }}" placeholder="901234567"></div>
+        <div class="campo"><label>DV</label>
+          <input type="text" name="empresa.dv" value="{{ e.dv }}" maxlength="1"></div>
+      </div>
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2"><label>Dirección</label>
+          <input type="text" name="empresa.direccion" value="{{ e.direccion }}"></div>
+        <div class="campo"><label>Ciudad</label>
+          <input type="text" name="empresa.ciudad" value="{{ e.ciudad }}"></div>
+        <div class="campo"><label>Departamento</label>
+          <input type="text" name="empresa.departamento" value="{{ e.departamento }}"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label>Teléfono</label>
+          <input type="text" name="empresa.telefono" value="{{ e.telefono }}"></div>
+        <div class="campo"><label>Email</label>
+          <input type="email" name="empresa.email" value="{{ e.email }}"></div>
+        <div class="campo"><label>Sitio web</label>
+          <input type="text" name="empresa.web" value="{{ e.web }}"></div>
+      </div>
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2"><label>Horario</label>
+          <input type="text" name="empresa.horario" value="{{ e.horario }}"></div>
+        <div class="campo"><label>Régimen</label>
+          <input type="text" name="empresa.regimen" value="{{ e.regimen }}"></div>
+        <div class="campo"><label>Actividad CIIU</label>
+          <input type="text" name="empresa.actividad_ciiu" value="{{ e.actividad_ciiu }}"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label>IVA por defecto (%)</label>
+          <input type="number" name="empresa.iva_defecto" value="{{ e.iva_defecto }}" step="0.5"></div>
+        <div class="campo"><label>Validez de cotización (días)</label>
+          <input type="number" name="empresa.validez_cotizacion_dias" value="{{ e.validez_cotizacion_dias }}"></div>
+        <div class="campo"><label>Plazo de factura (días)</label>
+          <input type="number" name="empresa.plazo_factura_dias" value="{{ e.plazo_factura_dias }}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Facturación electrónica DIAN</h3>
+      {% if dian_lista %}<span class="tag tag-ok" style="margin-left:auto">Datos cargados</span>
+      {% else %}<span class="tag tag-alerta" style="margin-left:auto">Sin habilitar</span>{% endif %}</div>
+    <div class="tarjeta-cuerpo">
+      <div class="aviso aviso-alerta">
+        <strong>Importante.</strong> Una factura electrónica sólo tiene validez legal cuando se
+        firma digitalmente y se transmite a la DIAN. Eso exige que la DIAN habilite a
+        {{ e.razon_social }} y que se contrate un <strong>Proveedor Tecnológico</strong>
+        (Factus, Alegra, Siigo, Facture…). <br><br>
+        Hasta entonces el sistema <strong>sí</strong> genera la factura completa, la numera,
+        calcula el CUFE y produce el XML UBL 2.1, pero <strong>no</strong> la transmite a la DIAN.
+        Los datos de abajo son los que exige el Anexo Técnico 1.9.
+      </div>
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2"><label>Resolución de numeración</label>
+          <input type="text" name="empresa.dian_resolucion" value="{{ e.dian_resolucion }}"
+                 placeholder="18760000001234"></div>
+        <div class="campo"><label>Fecha de la resolución</label>
+          <input type="date" name="empresa.dian_fecha_resolucion" value="{{ e.dian_fecha_resolucion }}"></div>
+        <div class="campo"><label>Prefijo</label>
+          <input type="text" name="empresa.dian_prefijo" value="{{ e.dian_prefijo }}"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label>Rango desde</label>
+          <input type="number" name="empresa.dian_rango_desde" value="{{ e.dian_rango_desde }}"></div>
+        <div class="campo"><label>Rango hasta</label>
+          <input type="number" name="empresa.dian_rango_hasta" value="{{ e.dian_rango_hasta }}"></div>
+        <div class="campo"><label>Ambiente</label>
+          <select name="empresa.dian_ambiente">
+            <option value="pruebas" {{ 'selected' if e.dian_ambiente=='pruebas' }}>Pruebas (habilitación)</option>
+            <option value="produccion" {{ 'selected' if e.dian_ambiente=='produccion' }}>Producción</option>
+          </select></div>
+      </div>
+      <div class="fila-2">
+        <div class="campo"><label>Clave técnica</label>
+          <input type="text" name="empresa.dian_clave_tecnica" value="{{ e.dian_clave_tecnica }}">
+          <div class="ayuda">La entrega la DIAN junto con la resolución.</div></div>
+        <div class="campo"><label>Proveedor tecnológico</label>
+          <input type="text" name="empresa.dian_proveedor" value="{{ e.dian_proveedor }}"
+                 placeholder="Factus / Alegra / Siigo…"></div>
+      </div>
+      <button class="btn">Guardar configuración</button>
+    </div>
+  </div>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Listas del inventario</h3>
+    <span class="silencio" style="margin-left:auto">Son las mismas listas desplegables de su Excel</span></div>
+  <div class="tarjeta-cuerpo">
+    <div class="rejilla rejilla-4" style="align-items:start">
+      {% for nombre, titulo in [('categoria','Categorías'),('material','Materiales'),
+                                 ('diametro','Diámetros'),('unidad','Unidades')] %}
+      <div>
+        <h4>{{ titulo }}</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.9rem">
+          {% for v in listas[nombre] %}
+          <form method="post" action="/admin/configuracion/lista" style="display:inline">
+            <input type="hidden" name="lista" value="{{ nombre }}">
+            <input type="hidden" name="eliminar" value="{{ v }}">
+            <button class="tag" style="border:0;cursor:pointer" title="Quitar «{{ v }}»"
+              onclick="return confirm('¿Quitar «{{ v }}» de la lista?')">{{ v }} ✕</button>
+          </form>
+          {% endfor %}
+        </div>
+        <form method="post" action="/admin/configuracion/lista" style="display:flex;gap:.4rem">
+          <input type="hidden" name="lista" value="{{ nombre }}">
+          <input type="text" name="valor" placeholder="Agregar…" style="font-size:.85rem">
+          <button class="btn btn-sm">+</button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

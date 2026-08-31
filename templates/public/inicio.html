@@ -1,0 +1,155 @@
+{% extends "base_public.html" %}
+{% block titulo %}IMATEC S.A.S. — Ferretería industrial y fabricación en acero · Cali{% endblock %}
+{% block descripcion %}Ferretería industrial en Cali: tubería, accesorios, bridas, válvulas, sistema ranurado, PVC, CPVC y polietileno. Además fabricamos equipos en acero inoxidable, estructuras metálicas y montajes.{% endblock %}
+
+{% block contenido %}
+<section class="hero">
+  <div class="contenedor">
+    <span class="hero-etiqueta">Cali · Valle del Cauca · Desde hace más de 30 años</span>
+    <h1>El <em>acero</em> que necesita: se lo vendemos, se lo fabricamos y se lo montamos.</h1>
+    <p>
+      Ferretería industrial con tubería, accesorios, bridas, válvulas, sistema ranurado,
+      PVC, CPVC y polietileno — y el mismo taller que diseña, fabrica y monta equipos
+      en acero inoxidable, estructuras metálicas y obras civiles.
+      Una sola empresa responde por el material y por el trabajo.
+    </p>
+    <div class="hero-acciones">
+      <a href="/catalogo" class="btn btn-lg">Ver catálogo</a>
+      <a href="/contacto" class="btn btn-lg btn-linea" style="border-color:#fff;color:#fff">Solicitar cotización</a>
+    </div>
+    <div class="hero-datos">
+      <div><b>30+</b><span>Años de experiencia</span></div>
+      <div><b>{{ total_categorias }}</b><span>Líneas de producto</span></div>
+      <div><b>{{ total_productos }}</b><span>Referencias en catálogo</span></div>
+      <div><b>100%</b><span>Suroccidente colombiano</span></div>
+    </div>
+  </div>
+</section>
+<div class="franja-amarilla"></div>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div class="kicker">Nuestros servicios</div>
+      <h2>Cinco líneas, una sola empresa responde</h2>
+      <p>Servicios integrados de alta calidad técnica en diseño, fabricación, montaje y mantenimiento.</p>
+    </div>
+    <div class="rejilla rejilla-3">
+      {% for s in servicios %}
+      <article class="servicio">
+        <div class="numero">{{ '%02d'|format(loop.index) }}</div>
+        <h3>{{ s.nombre }}</h3>
+        <p>{{ s.descripcion }}</p>
+        <a href="/catalogo?cat={{ s.slug }}" class="enlace">Ver productos →</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div class="kicker">Ferretería industrial</div>
+      <h2>Todo para su red: del tubo al último accesorio</h2>
+      <p>Manejamos tubería en acero galvanizado, acero al carbón e inoxidable, con todos sus
+         accesorios, bridas, válvulas y sistemas de unión. Si le falta una pieza para cerrar
+         el trabajo, aquí la encuentra.</p>
+    </div>
+    <div class="rejilla rejilla-4">
+      {% for c in lineas %}
+      <a href="/catalogo?cat={{ c.slug }}" class="linea">
+        <span class="linea-nombre">{{ c.nombre }}</span>
+        <span class="linea-desc">{{ c.descripcion }}</span>
+        <span class="linea-mas">{{ c.n }} referencia{{ 's' if c.n != 1 }} →</span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="centro" style="margin-top:2.4rem">
+      <a href="/catalogo" class="btn btn-oscuro">Ver todo el catálogo</a>
+    </div>
+  </div>
+</section>
+
+<section class="seccion seccion-gris">
+  <div class="contenedor">
+    <div class="titulo-seccion">
+      <div class="kicker">Taller y fabricación</div>
+      <h2>Productos destacados</h2>
+      <p>Fabricación en acero inoxidable AISI 304 y acero estructural. Todo se fabrica a la medida de su espacio y su necesidad.</p>
+    </div>
+    <div class="rejilla rejilla-3">
+      {% for p in destacados %}{% include "public/_tarjeta_producto.html" %}{% endfor %}
+    </div>
+    <div class="centro" style="margin-top:2.8rem">
+      <a href="/catalogo" class="btn btn-lg btn-oscuro">Ver catálogo completo</a>
+    </div>
+  </div>
+</section>
+
+<section class="seccion seccion-oscura">
+  <div class="contenedor">
+    <div class="rejilla rejilla-2" style="align-items:center;gap:3.5rem">
+      <div>
+        <div class="kicker" style="font-family:var(--titulo);font-weight:700;font-size:.74rem;
+             letter-spacing:.22em;text-transform:uppercase;color:var(--amarillo);margin-bottom:1rem">
+          Portal de clientes
+        </div>
+        <h2>Sus cotizaciones, remisiones y facturas en un solo lugar</h2>
+        <p style="color:#D6D8DA;font-size:1.05rem">
+          Si ya es cliente de IMATEC, ingrese a su perfil para armar solicitudes desde el
+          catálogo, hacer seguimiento a sus cotizaciones, ver el estado de sus despachos y
+          descargar sus remisiones y facturas cuando las necesite.
+        </p>
+        <div class="hero-acciones" style="margin-top:1.8rem">
+          <a href="/acceso" class="btn">Ingresar a mi portal</a>
+          <a href="/contacto" class="btn btn-linea" style="border-color:#fff;color:#fff">Solicitar acceso</a>
+        </div>
+      </div>
+      <div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+             border-radius:6px;padding:2rem">
+          {% for paso in [
+            ('1','Arme su solicitud','Elija del catálogo lo que necesita y envíelo con un clic.'),
+            ('2','Reciba la cotización','IMATEC la elabora y usted la aprueba desde el portal.'),
+            ('3','Siga el despacho','Consulte su remisión y quién recibió el pedido.'),
+            ('4','Descargue su factura','Factura electrónica lista para su contabilidad.')] %}
+          <div style="display:flex;gap:1.1rem;padding:1rem 0;
+               {% if not loop.last %}border-bottom:1px solid rgba(255,255,255,.1){% endif %}">
+            <div style="flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--amarillo);
+                 color:var(--negro);display:flex;align-items:center;justify-content:center;
+                 font-family:var(--titulo);font-weight:900">{{ paso[0] }}</div>
+            <div>
+              <b style="font-family:var(--titulo);display:block;margin-bottom:.15rem">{{ paso[1] }}</b>
+              <span style="color:#B9BDC0;font-size:.9rem">{{ paso[2] }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="seccion">
+  <div class="contenedor">
+    <div class="rejilla rejilla-2" style="gap:3.5rem;align-items:center">
+      <div>
+        <div class="titulo-seccion" style="margin-bottom:1.5rem">
+          <div class="kicker">Empecemos un nuevo proyecto</div>
+          <h2>¡Escríbanos hoy!</h2>
+          <p>Cuéntenos qué necesita. Le respondemos con una cotización sin costo.</p>
+        </div>
+        <p style="font-size:1.02rem;line-height:1.9">
+          <strong>Teléfono:</strong> <a href="tel:{{ empresa.telefono|replace(' ','')|replace('-','') }}">{{ empresa.telefono }}</a><br>
+          <strong>Dirección:</strong> {{ empresa.direccion }}, {{ empresa.ciudad }}<br>
+          <strong>Horario:</strong> {{ empresa.horario }}
+        </p>
+      </div>
+      <div style="background:var(--gris-100);padding:2rem;border-radius:6px;border-top:4px solid var(--amarillo)">
+        {% include "public/_form_contacto.html" %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Solicitudes web — IMATEC{% endblock %}
+{% block encabezado %}Solicitudes desde la web{% endblock %}
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo"><label>Estado</label>
+    <select name="estado"><option value="">Todas</option>
+      {% for e in ['nuevo','en_cotizacion','cotizado','cerrado','anulado'] %}
+      <option value="{{ e }}" {{ 'selected' if estado==e }}>{{ e|bonito }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-sm btn-claro">Filtrar</button>
+  <a href="/admin/pedidos" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+{% if pedidos %}
+{% for p in pedidos %}
+<div class="tarjeta">
+  <div class="tarjeta-cab">
+    <h3>{{ p.numero }}</h3>
+    <span class="tag {{ p.estado|tag }}">{{ p.estado|bonito }}</span>
+    <span class="silencio">{{ p.fecha }}</span>
+    <div class="acciones">
+      {% if p.estado in ['nuevo','en_cotizacion'] %}
+      <form method="post" action="/admin/pedidos/cotizar" style="display:flex;gap:.5rem">
+        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+        <select name="cliente_id" required style="min-width:230px;padding:.5rem .7rem;font-size:.85rem">
+          <option value="">— Asignar a cliente —</option>
+          {% for cl in clientes %}
+          <option value="{{ cl.id }}" {{ 'selected' if p.cliente_id == cl.id }}>
+            {{ cl.razon_social }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm">Convertir en cotización</button>
+      </form>
+      {% endif %}
+      <form method="post" action="/admin/pedidos/estado">
+        <input type="hidden" name="pedido_id" value="{{ p.id }}">
+        <input type="hidden" name="estado" value="cerrado">
+        <button class="btn btn-sm btn-claro">Cerrar</button>
+      </form>
+    </div>
+  </div>
+  <div class="tarjeta-cuerpo">
+    <div class="fila" style="margin-bottom:1rem">
+      <div><span class="silencio">Contacto</span><br><strong>{{ p.nombre_contacto }}</strong></div>
+      <div><span class="silencio">Empresa</span><br>{{ p.empresa or '—' }}</div>
+      <div><span class="silencio">Teléfono</span><br>{{ p.telefono }}</div>
+      <div><span class="silencio">Email</span><br>{{ p.email }}</div>
+    </div>
+    {% if p.notas %}<div class="aviso aviso-info"><strong>Nota del cliente:</strong> {{ p.notas }}</div>{% endif %}
+  </div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Producto</th><th class="num">Cantidad</th><th>Detalles / medidas</th></tr></thead>
+    <tbody>{% for i in p['items'] %}
+      <tr><td>{{ i.descripcion }}</td><td class="num">{{ i.cantidad|num }} {{ i.unidad }}</td>
+          <td class="silencio">{{ i.observacion or '—' }}</td></tr>
+    {% endfor %}</tbody></table></div>
+</div>
+{% endfor %}
+{% else %}
+<div class="tarjeta"><div class="vacio">
+  <b>No hay solicitudes</b>
+  <p>Cuando un cliente arme su solicitud en el catálogo de la web, aparecerá aquí.</p>
+  <a href="/catalogo" class="btn btn-claro" style="margin-top:1rem">Ver el catálogo público</a>
+</div></div>
+{% endif %}
+{% endblock %}

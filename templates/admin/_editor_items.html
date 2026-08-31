@@ -1,0 +1,22 @@
+<div class="tarjeta">
+  <div class="tarjeta-cab">
+    <h3>Ítems</h3>
+    <div class="acciones">
+      <button type="button" class="btn btn-sm" onclick="agregarFila()">+ Agregar ítem</button>
+    </div>
+  </div>
+  <div class="tabla-envoltura">
+    <table class="editor">
+      <thead><tr>
+        <th>#</th><th>Descripción</th><th>Cant.</th><th>Unidad</th><th>Precio</th>
+        {% if con_impuestos %}<th>Desc %</th><th>IVA %</th>{% endif %}
+        <th class="num">Valor</th><th></th>
+      </tr></thead>
+      <tbody id="items-cuerpo"></tbody>
+    </table>
+  </div>
+  <div class="tarjeta-cuerpo" style="display:flex;gap:2rem;flex-wrap:wrap;align-items:start">
+    <button type="button" class="btn btn-claro btn-sm" onclick="agregarFila()">+ Otro ítem</button>
+    <div class="totales" id="totales"></div>
+  </div>
+</div>

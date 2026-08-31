@@ -1,0 +1,153 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Clientes — IMATEC{% endblock %}
+{% block encabezado %}Clientes{% endblock %}
+{% block acciones %}<button class="btn btn-sm" onclick="nuevoCliente()">+ Nuevo cliente</button>{% endblock %}
+
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Razón social, NIT, contacto o email…"></div>
+  <button class="btn btn-sm btn-claro">Buscar</button>
+  <a href="/admin/clientes" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ clientes|length }} cliente(s)</h3></div>
+  {% if clientes %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Código</th><th>Razón social</th><th>Documento</th><th>Contacto</th>
+      <th>Teléfono</th><th class="num">Plazo</th><th class="num">Saldo</th>
+      <th>Portal</th><th></th></tr></thead>
+    <tbody>{% for c in clientes %}
+      <tr>
+        <td class="silencio">{{ c.codigo }}</td>
+        <td><a href="/admin/clientes/{{ c.id }}" class="enlace-doc"><strong>{{ c.razon_social }}</strong></a>
+          {% if c.nombre_comercial %}<div class="silencio">{{ c.nombre_comercial }}</div>{% endif %}</td>
+        <td class="mono">{{ c.tipo_documento }} {{ c.documento }}{% if c.dv %}-{{ c.dv }}{% endif %}</td>
+        <td>{{ c.contacto or '—' }}<div class="silencio">{{ c.email }}</div></td>
+        <td>{{ c.telefono or '—' }}</td>
+        <td class="num">{{ c.condicion_pago }} d</td>
+        <td class="num">{% if c.saldo > 0 %}<strong>{{ c.saldo|cop }}</strong>{% else %}
+          <span class="silencio">—</span>{% endif %}</td>
+        <td>{% if c.tiene_acceso %}<span class="tag tag-ok">Con acceso</span>
+            {% else %}<span class="tag">Sin acceso</span>{% endif %}</td>
+        <td class="acc">
+          <a href="/admin/clientes/{{ c.id }}" class="btn btn-sm btn-claro">Ver</a>
+          <button class="btn btn-sm btn-claro" onclick='editarCliente({{ c|tojson }})'>✎</button>
+        </td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Aún no hay clientes registrados</b>
+    <p>Registre sus clientes actuales para poder cotizar, remisionar y facturar.</p>
+    <button class="btn" style="margin-top:1rem" onclick="nuevoCliente()">+ Nuevo cliente</button></div>
+  {% endif %}
+</div>
+
+<div class="modal-fondo oculto" id="m-cliente">
+  <div class="modal">
+    <form method="post" action="/admin/clientes/guardar">
+      <div class="modal-cab"><h3 id="mc-titulo">Nuevo cliente</h3>
+        <button type="button" onclick="cerrar('m-cliente')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="cliente_id" id="c-id">
+        <div class="campo"><label>Razón social *</label>
+          <input type="text" name="razon_social" id="c-razon" required></div>
+        <div class="fila">
+          <div class="campo"><label>Tipo doc.</label>
+            <select name="tipo_documento" id="c-tipo">
+              <option>NIT</option><option>CC</option><option>CE</option><option>PAS</option>
+            </select></div>
+          <div class="campo"><label>Documento *</label>
+            <input type="text" name="documento" id="c-doc" required></div>
+          <div class="campo"><label>DV</label><input type="text" name="dv" id="c-dv" maxlength="1"></div>
+        </div>
+        <div class="fila-2">
+          <div class="campo"><label>Nombre comercial</label>
+            <input type="text" name="nombre_comercial" id="c-comercial"></div>
+          <div class="campo"><label>Persona de contacto</label>
+            <input type="text" name="contacto" id="c-contacto"></div>
+        </div>
+        <div class="fila-2">
+          <div class="campo"><label>Email</label><input type="email" name="email" id="c-email"></div>
+          <div class="campo"><label>Teléfono</label><input type="tel" name="telefono" id="c-tel"></div>
+        </div>
+        <div class="campo"><label>Dirección</label><input type="text" name="direccion" id="c-dir"></div>
+        <div class="fila">
+          <div class="campo"><label>Ciudad</label>
+            <input type="text" name="ciudad" id="c-ciudad" value="Cali"></div>
+          <div class="campo"><label>Departamento</label>
+            <input type="text" name="departamento" id="c-depto" value="Valle del Cauca"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label>Régimen</label>
+            <select name="regimen" id="c-regimen">
+              <option>Responsable de IVA</option><option>No responsable de IVA</option>
+              <option>Gran contribuyente</option></select></div>
+          <div class="campo"><label>Resp. fiscal</label>
+            <input type="text" name="responsabilidad_fiscal" id="c-fiscal" value="O-1"></div>
+        </div>
+        <div class="fila">
+          <div class="campo"><label>Plazo de pago (días)</label>
+            <input type="number" name="condicion_pago" id="c-plazo" value="30"></div>
+          <div class="campo"><label>Cupo de crédito</label>
+            <input type="number" name="cupo_credito" id="c-cupo" value="0" step="1000"></div>
+          <div class="campo"><label>Descuento %</label>
+            <input type="number" name="descuento_pct" id="c-desc" value="0" step="0.5"></div>
+        </div>
+        <div class="campo"><label>Notas</label><textarea name="notas" id="c-notas"></textarea></div>
+
+        <div style="background:var(--gris-100);padding:1rem;border-radius:6px" id="c-acceso-caja">
+          <label class="check"><input type="checkbox" name="crear_acceso" value="1" id="c-acceso">
+            <span>Crear acceso al portal de clientes</span></label>
+          <div class="campo" style="margin:.8rem 0 0">
+            <label>Contraseña inicial</label>
+            <input type="text" name="password" placeholder="Si la deja vacía: Imatec2026*">
+            <div class="ayuda">Se usa el email del cliente como usuario. Podrá cambiarla desde su portal.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-cliente')">Cancelar</button>
+        <button type="submit" class="btn">Guardar cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function cerrar(id){ document.getElementById(id).classList.add('oculto'); }
+function nuevoCliente(){
+  document.getElementById('mc-titulo').textContent = 'Nuevo cliente';
+  ['c-id','c-razon','c-doc','c-dv','c-comercial','c-contacto','c-email','c-tel','c-dir','c-notas']
+    .forEach(i => document.getElementById(i).value = '');
+  document.getElementById('c-ciudad').value = 'Cali';
+  document.getElementById('c-depto').value = 'Valle del Cauca';
+  document.getElementById('c-plazo').value = 30;
+  document.getElementById('c-cupo').value = 0;
+  document.getElementById('c-desc').value = 0;
+  document.getElementById('c-acceso-caja').style.display = '';
+  document.getElementById('m-cliente').classList.remove('oculto');
+  setTimeout(()=>document.getElementById('c-razon').focus(), 60);
+}
+function editarCliente(c){
+  document.getElementById('mc-titulo').textContent = 'Editar ' + c.razon_social;
+  const v = {'c-id':c.id,'c-razon':c.razon_social,'c-doc':c.documento,'c-dv':c.dv,
+    'c-comercial':c.nombre_comercial,'c-contacto':c.contacto,'c-email':c.email,
+    'c-tel':c.telefono,'c-dir':c.direccion,'c-ciudad':c.ciudad,'c-depto':c.departamento,
+    'c-fiscal':c.responsabilidad_fiscal,'c-plazo':c.condicion_pago,'c-cupo':c.cupo_credito,
+    'c-desc':c.descuento_pct,'c-notas':c.notas};
+  for (const k in v) document.getElementById(k).value = (v[k] === null ? '' : v[k]);
+  document.getElementById('c-tipo').value = c.tipo_documento || 'NIT';
+  document.getElementById('c-regimen').value = c.regimen || 'Responsable de IVA';
+  document.getElementById('c-acceso-caja').style.display = c.tiene_acceso ? 'none' : '';
+  document.getElementById('m-cliente').classList.remove('oculto');
+}
+document.querySelectorAll('.modal-fondo').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('oculto'); }));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-fondo').forEach(m => m.classList.add('oculto')); });
+</script>
+{% endblock %}

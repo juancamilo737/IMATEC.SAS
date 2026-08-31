@@ -1,0 +1,72 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Nueva factura — IMATEC{% endblock %}
+{% block encabezado %}Nueva factura{% endblock %}
+{% block acciones %}<a href="/admin/facturas" class="btn btn-sm btn-claro">Volver</a>{% endblock %}
+
+{% block contenido %}
+<form method="post" action="/admin/facturas/guardar" onsubmit="return prepararEnvio(event)">
+  <input type="hidden" name="items_json" id="items_json">
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos de la factura</h3></div>
+    <div class="tarjeta-cuerpo">
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2">
+          <label>Cliente *</label>
+          <select name="cliente_id" required>
+            <option value="">— Seleccione el cliente —</option>
+            {% for cl in clientes %}
+            <option value="{{ cl.id }}" {{ 'selected' if cliente_id and cl.id|string == cliente_id|string }}>
+              {{ cl.razon_social }} · {{ cl.documento }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="campo"><label>Fecha de emisión</label>
+          <input type="date" name="fecha_emision" value="{{ hoy }}"></div>
+        <div class="campo"><label>Orden de compra</label>
+          <input type="text" name="orden_compra"></div>
+      </div>
+      <div class="fila">
+        <div class="campo"><label>Forma de pago</label>
+          <select name="forma_pago"><option value="credito">Crédito</option>
+            <option value="contado">Contado</option></select></div>
+        <div class="campo"><label>Plazo (días)</label>
+          <input type="number" name="plazo" value="30"></div>
+        <div class="campo"><label>Medio de pago</label>
+          <select name="medio_pago">
+            <option value="transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="cheque">Cheque</option>
+            <option value="tarjeta">Tarjeta</option></select></div>
+        <div class="campo"><label>Descuento global ($)</label>
+          <input type="number" id="descuento" name="descuento" step="1" value="0"
+                 onchange="pintarItems()"></div>
+      </div>
+      <div class="campo"><label>Observaciones</label><textarea name="observaciones"></textarea></div>
+    </div>
+  </div>
+
+  {% with con_impuestos = true %}{% include "admin/_editor_items.html" %}{% endwith %}
+
+  <div class="aviso aviso-info">
+    La factura se crea en <strong>borrador</strong>. Al emitirla se calcula el CUFE y se
+    numera según la resolución DIAN configurada.
+  </div>
+
+  <div style="display:flex;gap:.7rem;justify-content:flex-end">
+    <a href="/admin/facturas" class="btn btn-claro">Cancelar</a>
+    <button type="submit" class="btn btn-lg">Crear factura</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/editor.js"></script>
+<script>
+const PRODUCTOS = {{ productos|tojson }};
+IVA_DEFECTO = {{ iva_defecto }};
+CON_IMPUESTOS = true;
+ITEMS = [];
+document.addEventListener('DOMContentLoaded', () => { agregarFila(); pintarItems(); });
+</script>
+{% endblock %}

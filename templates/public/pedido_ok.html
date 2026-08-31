@@ -1,0 +1,45 @@
+{% extends "base_public.html" %}
+{% block titulo %}Solicitud {{ pedido.numero }} recibida — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor" style="max-width:720px">
+    <div class="centro" style="margin-bottom:2rem">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--amarillo);
+           display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+           margin:0 auto 1.5rem">✓</div>
+      <h1>Solicitud recibida</h1>
+      <p style="font-size:1.08rem;color:var(--gris-600)">
+        Gracias, {{ pedido.nombre_contacto }}. Su solicitud quedó registrada con el número
+        <strong>{{ pedido.numero }}</strong>. Nuestro equipo la revisa y le envía la cotización.
+      </p>
+    </div>
+
+    <div class="tarjeta">
+      <div class="tarjeta-cab"><h3>Resumen de su solicitud</h3>
+        <span class="tag tag-amarillo" style="margin-left:auto">{{ pedido.numero }}</span></div>
+      <div class="tabla-envoltura">
+        <table class="datos">
+          <thead><tr><th>Producto</th><th class="num">Cantidad</th><th>Detalles</th></tr></thead>
+          <tbody>
+          {% for i in pedido['items'] %}
+            <tr><td>{{ i.descripcion }}</td><td class="num">{{ i.cantidad|num }} {{ i.unidad }}</td>
+                <td class="silencio">{{ i.observacion or '—' }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="aviso aviso-info">
+      Si tiene una pregunta urgente, llámenos al
+      <strong>{{ empresa.telefono }}</strong> ({{ empresa.horario }}) e indique el número
+      de su solicitud.
+    </div>
+
+    <div class="centro">
+      <a href="/catalogo" class="btn btn-claro">Seguir en el catálogo</a>
+      <a href="/" class="btn">Volver al inicio</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

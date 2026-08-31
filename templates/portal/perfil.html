@@ -1,0 +1,60 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Mis datos — IMATEC{% endblock %}
+{% block encabezado %}Mis datos{% endblock %}
+{% block contenido %}
+<div class="rejilla rejilla-2" style="align-items:start">
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos de contacto</h3></div>
+    <div class="tarjeta-cuerpo">
+      <div class="aviso aviso-info">
+        <strong>{{ cliente.razon_social }}</strong><br>
+        {{ cliente.tipo_documento }} {{ cliente.documento }}{% if cliente.dv %}-{{ cliente.dv }}{% endif %}<br>
+        <span class="silencio">Para cambiar la razón social o el documento, comuníquese con IMATEC.</span>
+      </div>
+      <form method="post" action="/portal/perfil/guardar">
+        <div class="campo"><label>Persona de contacto</label>
+          <input type="text" name="contacto" value="{{ cliente.contacto }}"></div>
+        <div class="fila-2">
+          <div class="campo"><label>Email</label>
+            <input type="email" name="email" value="{{ cliente.email }}"></div>
+          <div class="campo"><label>Teléfono</label>
+            <input type="tel" name="telefono" value="{{ cliente.telefono }}"></div>
+        </div>
+        <div class="campo"><label>Dirección</label>
+          <input type="text" name="direccion" value="{{ cliente.direccion }}"></div>
+        <div class="campo"><label>Ciudad</label>
+          <input type="text" name="ciudad" value="{{ cliente.ciudad }}"></div>
+        <button class="btn">Guardar mis datos</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Cambiar contraseña</h3></div>
+    <div class="tarjeta-cuerpo">
+      <form method="post" action="/portal/perfil/clave">
+        <div class="campo"><label>Contraseña actual</label>
+          <input type="password" name="actual" required autocomplete="current-password"></div>
+        <div class="campo"><label>Nueva contraseña</label>
+          <input type="password" name="nueva" required minlength="6" autocomplete="new-password">
+          <div class="ayuda">Mínimo 6 caracteres.</div></div>
+        <div class="campo"><label>Confirmar nueva contraseña</label>
+          <input type="password" name="confirmar" required minlength="6" autocomplete="new-password"></div>
+        <button class="btn btn-oscuro">Cambiar contraseña</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Condiciones comerciales</h3></div>
+  <div class="tarjeta-cuerpo">
+    <div class="fila">
+      <div><span class="silencio">Plazo de pago</span><br><strong>{{ cliente.condicion_pago }} días</strong></div>
+      <div><span class="silencio">Cupo de crédito</span><br><strong>{{ cliente.cupo_credito|cop }}</strong></div>
+      <div><span class="silencio">Descuento</span><br><strong>{{ cliente.descuento_pct }}%</strong></div>
+      <div><span class="silencio">Régimen</span><br><strong>{{ cliente.regimen }}</strong></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

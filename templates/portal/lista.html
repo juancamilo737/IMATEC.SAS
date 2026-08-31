@@ -1,0 +1,46 @@
+{% extends "base_panel.html" %}
+{% block titulo %}{{ titulo }} — IMATEC{% endblock %}
+{% block encabezado %}{{ titulo }}{% endblock %}
+{% block acciones %}<a href="/catalogo" class="btn btn-sm btn-claro">Catálogo</a>{% endblock %}
+
+{% block contenido %}
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ filas|length }} documento(s)</h3></div>
+  {% if filas %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr>
+      <th>Número</th><th>Fecha</th>
+      {% if clase == 'cotizaciones' %}<th>Válida hasta</th><th class="num">Total</th>{% endif %}
+      {% if clase == 'remisiones' %}<th>Transportador</th><th>Recibió</th>{% endif %}
+      {% if clase == 'facturas' %}<th>Vence</th><th class="num">Total</th><th class="num">Saldo</th>{% endif %}
+      <th>Estado</th><th></th>
+    </tr></thead>
+    <tbody>{% for d in filas %}
+      <tr>
+        <td><a href="/portal/{{ clase }}/{{ d.id }}" class="enlace-doc"><strong>{{ d.numero }}</strong></a></td>
+        <td class="silencio">{{ d.fecha_emision if clase == 'facturas' else d.fecha }}</td>
+        {% if clase == 'cotizaciones' %}
+          <td class="silencio">{{ d.vence }}</td><td class="num">{{ d.total|cop }}</td>
+        {% endif %}
+        {% if clase == 'remisiones' %}
+          <td>{{ d.transportador or '—' }}</td><td class="silencio">{{ d.recibido_por or '—' }}</td>
+        {% endif %}
+        {% if clase == 'facturas' %}
+          <td>{% if d.saldo > 0 and d.fecha_vencimiento < hoy %}
+                <span class="tag tag-error">{{ d.fecha_vencimiento }}</span>
+              {% else %}<span class="silencio">{{ d.fecha_vencimiento }}</span>{% endif %}</td>
+          <td class="num">{{ d.total|cop }}</td>
+          <td class="num">{% if d.saldo > 0 %}<strong>{{ d.saldo|cop }}</strong>
+            {% else %}<span class="silencio">—</span>{% endif %}</td>
+        {% endif %}
+        <td><span class="tag {{ d.estado|tag }}">{{ d.estado|bonito }}</span></td>
+        <td class="acc"><a href="/portal/{{ clase }}/{{ d.id }}" class="btn btn-sm btn-claro">Ver</a></td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Aún no hay {{ titulo|lower|replace('mis ','') }}</b>
+    <p>Cuando IMATEC genere estos documentos aparecerán aquí para consultarlos y descargarlos.</p>
+    <a href="/catalogo" class="btn" style="margin-top:1rem">Ir al catálogo</a></div>
+  {% endif %}
+</div>
+{% endblock %}

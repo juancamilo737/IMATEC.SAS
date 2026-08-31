@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+data/imatec.db*
+data/uploads/*
+data/excel/*.xlsx
+.DS_Store

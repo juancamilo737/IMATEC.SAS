@@ -1,0 +1,100 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Usuarios — IMATEC{% endblock %}
+{% block encabezado %}Usuarios y accesos{% endblock %}
+{% block acciones %}<button class="btn btn-sm" onclick="nuevoUsuario()">+ Nuevo usuario</button>{% endblock %}
+
+{% block contenido %}
+<div class="aviso aviso-info">
+  <strong>Administrador</strong> ve y hace todo. <strong>Vendedor</strong> gestiona ventas e
+  inventario. <strong>Cliente</strong> sólo ve sus propios documentos en el portal.
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ usuarios|length }} usuario(s)</h3></div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Cliente</th>
+      <th>Último acceso</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for u in usuarios %}
+      <tr>
+        <td><strong>{{ u.nombre }}</strong></td>
+        <td class="mono">{{ u.email }}</td>
+        <td><span class="tag {{ 'tag-oscuro' if u.rol=='admin' else ('tag-info' if u.rol=='vendedor' else '') }}">
+          {{ u.rol|capitalize }}</span></td>
+        <td class="silencio">{{ u.razon_social or '—' }}</td>
+        <td class="silencio">{{ u.ultimo_acceso or 'Nunca' }}</td>
+        <td>{% if u.activo %}<span class="tag tag-ok">Activo</span>
+            {% else %}<span class="tag tag-error">Inactivo</span>{% endif %}</td>
+        <td class="acc"><button class="btn btn-sm btn-claro"
+          onclick='editarUsuario({{ u|tojson }})'>✎</button></td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+</div>
+
+<div class="modal-fondo oculto" id="m-user">
+  <div class="modal" style="width:min(560px,100%)">
+    <form method="post" action="/admin/usuarios/guardar">
+      <div class="modal-cab"><h3 id="mu-titulo">Nuevo usuario</h3>
+        <button type="button" onclick="cerrar('m-user')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="usuario_id" id="u-id">
+        <div class="campo"><label>Nombre *</label><input type="text" name="nombre" id="u-nombre" required></div>
+        <div class="campo"><label>Correo *</label><input type="email" name="email" id="u-email" required></div>
+        <div class="fila-2">
+          <div class="campo"><label>Rol</label>
+            <select name="rol" id="u-rol" onchange="alternarCliente()">
+              <option value="cliente">Cliente</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="admin">Administrador</option>
+            </select></div>
+          <div class="campo" id="u-caja-cliente"><label>Cliente asociado</label>
+            <select name="cliente_id" id="u-cliente"><option value="">— Ninguno —</option>
+              {% for c in clientes %}<option value="{{ c.id }}">{{ c.razon_social }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="campo"><label>Contraseña</label>
+          <input type="text" name="password" id="u-pass" placeholder="Vacío = no cambiar / Imatec2026*">
+          <div class="ayuda">Al crear un usuario nuevo, si la deja vacía queda «Imatec2026*».</div></div>
+        <label class="check"><input type="checkbox" name="activo" value="1" id="u-activo" checked>
+          <span>Usuario activo</span></label>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-user')">Cancelar</button>
+        <button type="submit" class="btn">Guardar usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function cerrar(id){ document.getElementById(id).classList.add('oculto'); }
+function alternarCliente(){
+  document.getElementById('u-caja-cliente').style.display =
+    document.getElementById('u-rol').value === 'cliente' ? '' : 'none';
+}
+function nuevoUsuario(){
+  document.getElementById('mu-titulo').textContent = 'Nuevo usuario';
+  ['u-id','u-nombre','u-email','u-pass'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('u-rol').value = 'cliente';
+  document.getElementById('u-cliente').value = '';
+  document.getElementById('u-activo').checked = true;
+  alternarCliente();
+  document.getElementById('m-user').classList.remove('oculto');
+}
+function editarUsuario(u){
+  document.getElementById('mu-titulo').textContent = 'Editar ' + u.nombre;
+  document.getElementById('u-id').value = u.id;
+  document.getElementById('u-nombre').value = u.nombre;
+  document.getElementById('u-email').value = u.email;
+  document.getElementById('u-rol').value = u.rol;
+  document.getElementById('u-cliente').value = u.cliente_id || '';
+  document.getElementById('u-pass').value = '';
+  document.getElementById('u-activo').checked = !!u.activo;
+  alternarCliente();
+  document.getElementById('m-user').classList.remove('oculto');
+}
+document.querySelectorAll('.modal-fondo').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('oculto'); }));
+</script>
+{% endblock %}

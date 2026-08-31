@@ -1,0 +1,90 @@
+{% extends "base_panel.html" %}
+{% block titulo %}{{ c.razon_social }} — IMATEC{% endblock %}
+{% block encabezado %}{{ c.razon_social }}{% endblock %}
+{% block acciones %}
+<a href="/admin/cotizaciones/nueva?cliente_id={{ c.id }}" class="btn btn-sm">+ Cotización</a>
+<a href="/admin/clientes" class="btn btn-sm btn-claro">Volver</a>
+{% endblock %}
+
+{% block contenido %}
+<div class="kpis">
+  <div class="kpi kpi-info"><div class="et">Total comprado</div>
+    <div class="val">{{ comprado|cop }}</div></div>
+  <div class="kpi {{ 'kpi-error' if saldo > 0 else 'kpi-ok' }}"><div class="et">Saldo pendiente</div>
+    <div class="val">{{ saldo|cop }}</div>
+    <div class="sub">Cupo: {{ c.cupo_credito|cop }} · Plazo {{ c.condicion_pago }} días</div></div>
+  <div class="kpi"><div class="et">Cotizaciones</div><div class="val">{{ cotizaciones|length }}</div></div>
+  <div class="kpi"><div class="et">Facturas</div><div class="val">{{ facturas|length }}</div></div>
+</div>
+
+<div class="rejilla rejilla-2" style="align-items:start">
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos del cliente</h3></div>
+    <div class="tarjeta-cuerpo">
+      <table class="datos" style="font-size:.9rem">
+        <tbody>
+          <tr><td class="silencio">Código</td><td><strong>{{ c.codigo }}</strong></td></tr>
+          <tr><td class="silencio">Documento</td>
+            <td class="mono">{{ c.tipo_documento }} {{ c.documento }}{% if c.dv %}-{{ c.dv }}{% endif %}</td></tr>
+          <tr><td class="silencio">Contacto</td><td>{{ c.contacto or '—' }}</td></tr>
+          <tr><td class="silencio">Email</td><td>{{ c.email or '—' }}</td></tr>
+          <tr><td class="silencio">Teléfono</td><td>{{ c.telefono or '—' }}</td></tr>
+          <tr><td class="silencio">Dirección</td><td>{{ c.direccion or '—' }}<br>
+            <span class="silencio">{{ c.ciudad }}, {{ c.departamento }}</span></td></tr>
+          <tr><td class="silencio">Régimen</td><td>{{ c.regimen }} · {{ c.responsabilidad_fiscal }}</td></tr>
+          <tr><td class="silencio">Descuento</td><td>{{ c.descuento_pct }}%</td></tr>
+          {% if c.notas %}<tr><td class="silencio">Notas</td><td>{{ c.notas }}</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Acceso al portal</h3></div>
+    <div class="tarjeta-cuerpo">
+      {% if usuarios %}
+        <table class="datos" style="font-size:.9rem"><tbody>
+        {% for u in usuarios %}
+          <tr><td><strong>{{ u.nombre }}</strong><div class="silencio">{{ u.email }}</div></td>
+              <td>{% if u.activo %}<span class="tag tag-ok">Activo</span>
+                  {% else %}<span class="tag tag-error">Inactivo</span>{% endif %}</td>
+              <td class="silencio">{{ u.ultimo_acceso or 'Nunca ha entrado' }}</td></tr>
+        {% endfor %}
+        </tbody></table>
+        <p class="silencio" style="margin-top:1rem;margin-bottom:0">
+          Para cambiar la contraseña vaya a <a href="/admin/usuarios">Usuarios</a>.</p>
+      {% else %}
+        <div class="vacio" style="padding:1.8rem 1rem">
+          <b>Sin acceso al portal</b>
+          <p>Créelo en <a href="/admin/usuarios">Usuarios</a> para que este cliente
+             consulte sus documentos en línea.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% for titulo, filas, ruta, campos in [
+    ('Cotizaciones', cotizaciones, '/admin/cotizaciones/', 'cot'),
+    ('Remisiones', remisiones, '/admin/remisiones/', 'rem'),
+    ('Facturas', facturas, '/admin/facturas/', 'fac')] %}
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ titulo }}</h3>
+    <span class="tag" style="margin-left:auto">{{ filas|length }}</span></div>
+  {% if filas %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Número</th><th>Fecha</th>
+      {% if campos != 'rem' %}<th class="num">Total</th>{% endif %}
+      {% if campos == 'fac' %}<th class="num">Saldo</th>{% endif %}
+      <th>Estado</th></tr></thead>
+    <tbody>{% for d in filas %}
+      <tr><td><a href="{{ ruta }}{{ d.id }}" class="enlace-doc">{{ d.numero }}</a></td>
+          <td class="silencio">{{ d.fecha if campos != 'fac' else d.fecha_emision }}</td>
+          {% if campos != 'rem' %}<td class="num">{{ d.total|cop }}</td>{% endif %}
+          {% if campos == 'fac' %}<td class="num">{{ d.saldo|cop }}</td>{% endif %}
+          <td><span class="tag {{ d.estado|tag }}">{{ d.estado|bonito }}</span></td></tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}<div class="vacio" style="padding:1.6rem"><b>Sin {{ titulo|lower }}</b></div>{% endif %}
+</div>
+{% endfor %}
+{% endblock %}

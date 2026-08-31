@@ -1,0 +1,17 @@
+{% extends "base_public.html" %}
+{% block titulo %}Página no encontrada — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="seccion centro" style="padding:6rem 0">
+  <div class="contenedor" style="max-width:560px">
+    <div style="font-family:var(--titulo);font-size:5rem;font-weight:900;color:var(--gris-200);
+         line-height:1">404</div>
+    <h1>No encontramos esta página</h1>
+    <p style="color:var(--gris-600)">Puede que el enlace haya cambiado. Le dejamos por dónde seguir.</p>
+    <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.6rem">
+      <a href="/" class="btn">Inicio</a>
+      <a href="/catalogo" class="btn btn-claro">Catálogo</a>
+      <a href="/contacto" class="btn btn-claro">Contacto</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

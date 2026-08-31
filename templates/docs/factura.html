@@ -1,0 +1,158 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Factura {{ f.numero }} — IMATEC{% endblock %}
+{% block encabezado %}Factura {{ f.numero }}{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+{% if panel %}
+  <a href="/admin/facturas/{{ f.id }}/xml" class="btn btn-sm btn-claro">XML UBL</a>
+  {% if f.estado == 'borrador' %}
+  <form method="post" action="/admin/facturas/emitir" style="margin:0">
+    <input type="hidden" name="factura_id" value="{{ f.id }}">
+    <button class="btn btn-sm">Emitir factura</button></form>
+  {% endif %}
+  {% if f.saldo > 0 and f.estado not in ['borrador','anulada'] %}
+  <button class="btn btn-sm btn-oscuro"
+    onclick="document.getElementById('m-pago').classList.remove('oculto')">Registrar pago</button>
+  {% endif %}
+  <a href="/admin/facturas" class="btn btn-sm btn-claro">Volver</a>
+{% else %}
+  <a href="/portal/facturas" class="btn btn-sm btn-claro">Volver</a>
+{% endif %}
+{% endblock %}
+
+{% block contenido %}
+{% if panel and f.estado == 'borrador' %}
+<div class="aviso aviso-alerta no-imprimir">
+  <strong>Borrador.</strong> Esta factura aún no está emitida: no tiene CUFE definitivo ni
+  valor legal. Use «Emitir factura» cuando esté lista.
+</div>
+{% endif %}
+{% if panel and not dian_lista and f.estado != 'borrador' %}
+<div class="aviso aviso-alerta no-imprimir">
+  Factura numerada y con CUFE calculado, pero <strong>no transmitida a la DIAN</strong>:
+  faltan los datos de habilitación en <a href="/admin/configuracion">Configuración</a>.
+</div>
+{% endif %}
+
+<div class="doc">
+  {% with clase='Factura de venta', numero=f.numero,
+          meta='Emisión: ' ~ f.fecha_emision ~ '<br>Vencimiento: ' ~ (f.fecha_vencimiento or '—') ~
+               '<br>Pago: ' ~ f.forma_pago|capitalize ~ ' · ' ~ f.medio_pago|capitalize ~
+               '<br>Estado: ' ~ f.estado|replace('_',' ')|capitalize %}
+    {% include "docs/_encabezado.html" %}
+  {% endwith %}
+
+  {% with cl=f.cliente, titulo_2='Referencias',
+          cuerpo_2=('<strong>Cotización:</strong> ' ~ f.cotizacion.numero ~ '<br>' if f.cotizacion else '') ~
+                   ('<strong>Remisión:</strong> ' ~ f.remision.numero ~ '<br>' if f.remision else '') ~
+                   ('<strong>O. compra:</strong> ' ~ f.orden_compra ~ '<br>' if f.orden_compra else '') ~
+                   '<strong>Régimen cliente:</strong> ' ~ f.cliente.regimen ~
+                   '<br><strong>Resp. fiscal:</strong> ' ~ f.cliente.responsabilidad_fiscal %}
+    {% include "docs/_cliente.html" %}
+  {% endwith %}
+
+  <table class="doc-items">
+    <thead><tr><th style="width:26px">#</th><th>Descripción</th><th class="num">Cant.</th>
+      <th class="num">Unidad</th><th class="num">Vr. unitario</th><th class="num">Desc.</th>
+      <th class="num">IVA</th><th class="num">Valor</th></tr></thead>
+    <tbody>
+    {% for i in f['items'] %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><strong>{{ i.descripcion }}</strong>
+          {% if i.especificaciones %}<span class="esp">{{ i.especificaciones }}</span>{% endif %}</td>
+        <td class="num">{{ i.cantidad|num }}</td>
+        <td class="num">{{ i.unidad }}</td>
+        <td class="num">{{ i.precio|cop }}</td>
+        <td class="num">{{ i.descuento_pct|num }}%</td>
+        <td class="num">{{ i.iva_pct|num }}%</td>
+        <td class="num"><strong>{{ i.total|cop }}</strong></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="doc-totales">
+    <div class="doc-notas">
+      {% if f.observaciones %}<h5>Observaciones</h5><p>{{ f.observaciones }}</p>{% endif %}
+      {% if f['pagos'] %}
+      <h5>Pagos recibidos</h5>
+      <p>{% for p in f['pagos'] %}{{ p.fecha }} — {{ p.valor|cop }} ({{ p.medio }}{% if p.referencia %},
+        {{ p.referencia }}{% endif %})<br>{% endfor %}</p>
+      {% endif %}
+      <h5>Condiciones</h5>
+      <p>Valores en pesos colombianos (COP). {% if f.forma_pago == 'credito' %}
+        Pago a {{ f.fecha_vencimiento }}. {% endif %}
+        La mercancía viaja por cuenta y riesgo del comprador. Esta factura presta mérito
+        ejecutivo conforme al Código de Comercio.</p>
+    </div>
+    <div class="doc-sumas">
+      <div><span>Subtotal</span><span>{{ f.subtotal|cop }}</span></div>
+      {% if f.descuento %}<div><span>Descuento</span><span>-{{ f.descuento|cop }}</span></div>{% endif %}
+      <div><span>IVA</span><span>{{ f.iva|cop }}</span></div>
+      <div class="total"><span>TOTAL</span><span>{{ f.total|cop }}</span></div>
+      {% if f.saldo and f.saldo != f.total %}
+      <div style="margin-top:6px"><span><strong>Saldo pendiente</strong></span>
+        <span><strong>{{ f.saldo|cop }}</strong></span></div>{% endif %}
+    </div>
+  </div>
+  <div class="doc-letras"><strong>Son:</strong> {{ f.total|letras }}</div>
+
+  {% if f.cufe %}
+  <div class="doc-dian">
+    <strong>FACTURA ELECTRÓNICA DE VENTA</strong><br>
+    {% if f.resolucion_dian %}Resolución DIAN No. {{ f.resolucion_dian }} ·
+      Rango {{ empresa.dian_prefijo }}{{ empresa.dian_rango_desde }} al
+      {{ empresa.dian_prefijo }}{{ empresa.dian_rango_hasta }}<br>{% endif %}
+    <strong>CUFE:</strong> {{ f.cufe }}<br>
+    <span style="color:#888">Consulte esta factura en el portal de la DIAN con el CUFE.</span>
+  </div>
+  {% endif %}
+
+  <div class="doc-firmas">
+    <div class="doc-firma">{{ f.elaborado_por or empresa.razon_social }}<br>
+      <span class="silencio">Elaboró</span></div>
+    <div class="doc-firma">{{ f.cliente.razon_social }}<br>
+      <span class="silencio">Recibido — Nombre, C.C. y fecha</span></div>
+  </div>
+
+  <div class="doc-pie">
+    {{ empresa.razon_social }}{% if empresa.nit %} · NIT {{ empresa.nit }}{% if empresa.dv %}-{{ empresa.dv }}{% endif %}{% endif %}
+    · {{ empresa.direccion }}, {{ empresa.ciudad }} · {{ empresa.telefono }} · {{ empresa.web }}
+  </div>
+</div>
+
+{% if panel %}
+<div class="modal-fondo oculto no-imprimir" id="m-pago">
+  <div class="modal" style="width:min(480px,100%)">
+    <form method="post" action="/admin/facturas/pago">
+      <div class="modal-cab"><h3>Registrar pago</h3>
+        <button type="button" onclick="document.getElementById('m-pago').classList.add('oculto')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="factura_id" value="{{ f.id }}">
+        <div class="aviso aviso-info">Saldo pendiente: <strong>{{ f.saldo|cop }}</strong></div>
+        <div class="fila-2">
+          <div class="campo"><label>Valor *</label>
+            <input type="number" name="valor" step="1" required value="{{ f.saldo|round|int }}"></div>
+          <div class="campo"><label>Fecha</label>
+            <input type="date" name="fecha" value="{{ hoy }}"></div>
+        </div>
+        <div class="fila-2">
+          <div class="campo"><label>Medio</label>
+            <select name="medio"><option value="transferencia">Transferencia</option>
+              <option value="efectivo">Efectivo</option><option value="cheque">Cheque</option>
+              <option value="tarjeta">Tarjeta</option></select></div>
+          <div class="campo"><label>Referencia</label>
+            <input type="text" name="referencia" placeholder="No. de comprobante"></div>
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro"
+          onclick="document.getElementById('m-pago').classList.add('oculto')">Cancelar</button>
+        <button type="submit" class="btn">Registrar pago</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

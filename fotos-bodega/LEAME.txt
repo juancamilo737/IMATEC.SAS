@@ -1,0 +1,24 @@
+FOTOS DE LA BODEGA — cómo agregarlas
+=====================================
+
+Guarde aquí las fotos de la bodega y de los productos (JPG o PNG, del celular
+sirven perfectamente). Luego, en la Terminal, dentro de la carpeta IMATEC.SAS:
+
+    ./.venv/bin/python herramientas/procesar_fotos.py
+
+El programa las optimiza para la web (las deja livianas para que la página
+cargue rápido) y las deja listas en static/img/bodega/.
+
+Nombre las fotos según lo que muestran, así es más fácil ubicarlas:
+
+    bodega-1.jpg          vista general de la bodega
+    bodega-2.jpg          otra vista
+    accesorios.jpg        estantería de codos, tees y uniones
+    bridas.jpg            las bridas
+    valvulas.jpg          las válvulas
+    ranurado.jpg          los acoples ranurados (los rojos)
+    pvc.jpg               PVC y CPVC
+    tuberia.jpg           la tubería
+
+Después se asignan a cada línea del catálogo desde el panel:
+Catálogo web -> editar producto -> Imagen.

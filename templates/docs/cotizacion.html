@@ -1,0 +1,116 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Cotización {{ c.numero }} — IMATEC{% endblock %}
+{% block encabezado %}Cotización {{ c.numero }}{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+{% if panel %}
+  <a href="/admin/cotizaciones/{{ c.id }}/editar" class="btn btn-sm btn-claro">Editar</a>
+  {% if c.estado == 'borrador' %}
+  <form method="post" action="/admin/cotizaciones/estado" style="margin:0">
+    <input type="hidden" name="cotizacion_id" value="{{ c.id }}">
+    <input type="hidden" name="estado" value="enviada">
+    <button class="btn btn-sm">Marcar enviada</button></form>
+  {% elif c.estado == 'enviada' %}
+  <form method="post" action="/admin/cotizaciones/estado" style="margin:0">
+    <input type="hidden" name="cotizacion_id" value="{{ c.id }}">
+    <input type="hidden" name="estado" value="aprobada">
+    <button class="btn btn-sm">Aprobar</button></form>
+  {% endif %}
+  {% if c.estado == 'aprobada' %}
+  <form method="post" action="/admin/cotizaciones/remisionar" style="margin:0">
+    <input type="hidden" name="cotizacion_id" value="{{ c.id }}">
+    <button class="btn btn-sm">Generar remisión</button></form>
+  <form method="post" action="/admin/cotizaciones/facturar" style="margin:0">
+    <input type="hidden" name="cotizacion_id" value="{{ c.id }}">
+    <button class="btn btn-sm btn-oscuro">Facturar</button></form>
+  {% endif %}
+  <a href="/admin/cotizaciones" class="btn btn-sm btn-claro">Volver</a>
+{% else %}
+  <a href="/portal/cotizaciones" class="btn btn-sm btn-claro">Volver</a>
+{% endif %}
+{% endblock %}
+
+{% block contenido %}
+{% if portal and c.estado == 'enviada' %}
+<div class="tarjeta no-imprimir" style="border-left:4px solid var(--amarillo)">
+  <div class="tarjeta-cuerpo" style="display:flex;gap:1.2rem;align-items:center;flex-wrap:wrap">
+    <div style="flex:1;min-width:240px">
+      <h3 style="margin-bottom:.2rem">¿Aprueba esta cotización?</h3>
+      <p class="silencio" style="margin:0">Al aprobarla nos autoriza a iniciar la fabricación.
+        Válida hasta el {{ c.vence }}.</p>
+    </div>
+    <form method="post" action="/portal/cotizaciones/responder" style="display:flex;gap:.6rem">
+      <input type="hidden" name="cotizacion_id" value="{{ c.id }}">
+      <button name="decision" value="aprobar" class="btn">Aprobar</button>
+      <button name="decision" value="rechazar" class="btn btn-claro">No por ahora</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div class="doc">
+  {% with clase='Cotización', numero=c.numero,
+          meta='Fecha: ' ~ c.fecha ~ '<br>Válida hasta: ' ~ c.vence ~
+               '<br>Estado: ' ~ c.estado|capitalize %}
+    {% include "docs/_encabezado.html" %}
+  {% endwith %}
+
+  {% with cl=c.cliente, titulo_2='Condiciones',
+          cuerpo_2='<strong>Tiempo de entrega:</strong> ' ~ (c.tiempo_entrega or '—') ~
+                   '<br><strong>Forma de pago:</strong> ' ~ (c.forma_pago or '—') ~
+                   '<br><strong>Validez:</strong> ' ~ c.validez_dias ~ ' días' ~
+                   ('<br><strong>Elaboró:</strong> ' ~ c.elaborado_por if c.elaborado_por else '') %}
+    {% include "docs/_cliente.html" %}
+  {% endwith %}
+
+  <table class="doc-items">
+    <thead><tr><th style="width:26px">#</th><th>Descripción</th><th class="num">Cant.</th>
+      <th class="num">Unidad</th><th class="num">Vr. unitario</th>
+      <th class="num">Desc.</th><th class="num">Valor</th></tr></thead>
+    <tbody>
+    {% for i in c['items'] %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><strong>{{ i.descripcion }}</strong>
+          {% if i.especificaciones %}<span class="esp">{{ i.especificaciones }}</span>{% endif %}</td>
+        <td class="num">{{ i.cantidad|num }}</td>
+        <td class="num">{{ i.unidad }}</td>
+        <td class="num">{{ i.precio|cop }}</td>
+        <td class="num">{{ i.descuento_pct|num }}%</td>
+        <td class="num"><strong>{{ i.total|cop }}</strong></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="doc-totales">
+    <div class="doc-notas">
+      {% if c.condiciones %}<h5>Condiciones comerciales</h5><p>{{ c.condiciones }}</p>{% endif %}
+      {% if c.notas %}<h5>Notas</h5><p>{{ c.notas }}</p>{% endif %}
+      <h5>Importante</h5>
+      <p>Los valores están expresados en pesos colombianos (COP). Esta cotización no constituye
+      una factura de venta. Los precios pueden variar si cambian las medidas, calibres o
+      acabados definidos.</p>
+    </div>
+    <div class="doc-sumas">
+      <div><span>Subtotal</span><span>{{ c.subtotal|cop }}</span></div>
+      {% if c.descuento %}<div><span>Descuento</span><span>-{{ c.descuento|cop }}</span></div>{% endif %}
+      <div><span>IVA</span><span>{{ c.iva|cop }}</span></div>
+      <div class="total"><span>TOTAL</span><span>{{ c.total|cop }}</span></div>
+    </div>
+  </div>
+  <div class="doc-letras"><strong>Son:</strong> {{ c.total|letras }}</div>
+
+  <div class="doc-firmas">
+    <div class="doc-firma">{{ empresa.razon_social }}<br><span class="silencio">Elaboró</span></div>
+    <div class="doc-firma">{{ c.cliente.razon_social }}<br><span class="silencio">Aceptación del cliente</span></div>
+  </div>
+
+  <div class="doc-pie">
+    {{ empresa.razon_social }} · {{ empresa.direccion }}, {{ empresa.ciudad }} ·
+    {{ empresa.telefono }} · {{ empresa.web }}<br>
+    Fabricación de equipos y montajes industriales · Estructuras metálicas ·
+    Equipos hospitalarios · Obras civiles · Extracción de núcleos
+  </div>
+</div>
+{% endblock %}

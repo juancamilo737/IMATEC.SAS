@@ -1,0 +1,48 @@
+{% extends "base_public.html" %}
+{% block titulo %}Servicios — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="hero" style="padding:4.5rem 0 4rem">
+  <div class="contenedor">
+    <span class="hero-etiqueta">Servicios</span>
+    <h1>Cinco líneas de <em>trabajo</em></h1>
+    <p>Diseño, fabricación, montaje y mantenimiento con personal técnico calificado.</p>
+  </div>
+</section>
+<div class="franja-amarilla"></div>
+
+<section class="seccion">
+  <div class="contenedor">
+    {% for s in servicios %}
+    <div class="rejilla rejilla-2" style="gap:3rem;align-items:center;margin-bottom:4rem">
+      <div style="{{ 'order:2' if loop.index is even }}">
+        <div class="servicio" style="border:0;padding:0">
+          <div class="numero" style="color:var(--amarillo)">{{ '%02d'|format(loop.index) }}</div>
+          <h2>{{ s.nombre }}</h2>
+          <p style="font-size:1.05rem;color:var(--gris-600)">{{ s.descripcion }}</p>
+          <a href="/catalogo?cat={{ s.slug }}" class="btn btn-oscuro" style="margin-top:.6rem">
+            Ver productos</a>
+        </div>
+      </div>
+      <div style="{{ 'order:1' if loop.index is even }}">
+        {% if s.imagen %}
+        <img src="/static/img/{{ s.imagen }}" alt="{{ s.nombre }}"
+             style="border-radius:6px;aspect-ratio:4/3;object-fit:cover;width:100%">
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion seccion-gris">
+  <div class="contenedor" style="max-width:720px">
+    <div class="titulo-seccion centro" style="margin:0 auto 2rem">
+      <h2>Empecemos un nuevo proyecto</h2>
+      <p>¡Escríbanos hoy! Le respondemos con una cotización sin costo.</p>
+    </div>
+    <div style="background:#fff;padding:2rem;border-radius:6px;border-top:4px solid var(--amarillo)">
+      {% include "public/_form_contacto.html" %}
+    </div>
+  </div>
+</section>
+{% endblock %}

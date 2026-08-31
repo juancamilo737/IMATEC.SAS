@@ -1,0 +1,50 @@
+{% extends "base_public.html" %}
+{% block titulo %}Contáctenos — IMATEC S.A.S.{% endblock %}
+{% block contenido %}
+<section class="hero" style="padding:4.5rem 0 4rem">
+  <div class="contenedor">
+    <span class="hero-etiqueta">Contacto</span>
+    <h1>Contáct<em>enos</em></h1>
+  </div>
+</section>
+<div class="franja-amarilla"></div>
+
+<section class="seccion">
+  <div class="contenedor">
+    {% if enviado %}
+    <div class="aviso aviso-ok"><strong>¡Mensaje recibido!</strong>
+      Gracias por escribirnos. Le responderemos lo antes posible.</div>
+    {% endif %}
+    <div class="rejilla rejilla-2" style="gap:3.5rem">
+      <div>
+        <h2>Información de contacto</h2>
+        <p style="font-size:1.05rem;line-height:2">
+          <strong>Dirección</strong><br>{{ empresa.direccion }}<br>
+          {{ empresa.ciudad }} – {{ empresa.departamento }}<br>{{ empresa.pais }}
+        </p>
+        <p style="font-size:1.05rem;line-height:2">
+          <strong>Teléfono</strong><br>
+          <a href="tel:{{ empresa.telefono|replace(' ','')|replace('-','') }}"
+             style="border-bottom:2px solid var(--amarillo)">{{ empresa.telefono }}</a>
+        </p>
+        {% if empresa.email %}
+        <p style="font-size:1.05rem;line-height:2">
+          <strong>Email</strong><br>
+          <a href="mailto:{{ empresa.email }}" style="border-bottom:2px solid var(--amarillo)">{{ empresa.email }}</a>
+        </p>
+        {% endif %}
+        <p style="font-size:1.05rem;line-height:2">
+          <strong>Horario laboral</strong><br>
+          Lunes a Sábado de 8:00am a 6:00pm<br>
+          <span class="silencio">Domingos cerrado</span>
+        </p>
+      </div>
+      <div style="background:var(--gris-100);padding:2rem;border-radius:6px;
+           border-top:4px solid var(--amarillo)">
+        <h3>Escríbanos llenando la siguiente forma</h3>
+        {% include "public/_form_contacto.html" %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

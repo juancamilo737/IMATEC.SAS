@@ -1,0 +1,47 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Cotizaciones — IMATEC{% endblock %}
+{% block encabezado %}Cotizaciones{% endblock %}
+{% block acciones %}<a href="/admin/cotizaciones/nueva" class="btn btn-sm">+ Nueva cotización</a>{% endblock %}
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Número o cliente…"></div>
+  <div class="campo"><label>Estado</label>
+    <select name="estado"><option value="">Todos</option>
+      {% for e in ['borrador','enviada','aprobada','rechazada','vencida'] %}
+      <option value="{{ e }}" {{ 'selected' if estado==e }}>{{ e|capitalize }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-sm btn-claro">Filtrar</button>
+  <a href="/admin/cotizaciones" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ cotizaciones|length }} cotización(es)</h3></div>
+  {% if cotizaciones %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Válida hasta</th>
+      <th class="num">Total</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for c in cotizaciones %}
+      <tr>
+        <td><a href="/admin/cotizaciones/{{ c.id }}" class="enlace-doc"><strong>{{ c.numero }}</strong></a></td>
+        <td class="silencio">{{ c.fecha }}</td>
+        <td>{{ c.razon_social }}</td>
+        <td class="{{ 'silencio' if c.vence >= hoy }}">
+          {% if c.vence < hoy and c.estado in ['borrador','enviada'] %}
+            <span class="tag tag-alerta">Vencida {{ c.vence }}</span>
+          {% else %}{{ c.vence }}{% endif %}</td>
+        <td class="num"><strong>{{ c.total|cop }}</strong></td>
+        <td><span class="tag {{ c.estado|tag }}">{{ c.estado|bonito }}</span></td>
+        <td class="acc">
+          <a href="/admin/cotizaciones/{{ c.id }}" class="btn btn-sm btn-claro">Ver</a>
+          <a href="/admin/cotizaciones/{{ c.id }}/editar" class="btn btn-sm btn-claro">Editar</a>
+        </td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Aún no hay cotizaciones</b>
+    <p>Cree una desde cero o conviértala desde una solicitud web.</p>
+    <a href="/admin/cotizaciones/nueva" class="btn" style="margin-top:1rem">+ Nueva cotización</a></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Remisiones — IMATEC{% endblock %}
+{% block encabezado %}Remisiones{% endblock %}
+{% block acciones %}
+<a href="/admin/remisiones/nueva" class="btn btn-sm">+ Nueva remisión</a>
+<a href="/admin/despachos" class="btn btn-sm btn-claro">Tablero de despachos</a>
+{% endblock %}
+{% block contenido %}
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Número o cliente…"></div>
+  <div class="campo"><label>Estado</label>
+    <select name="estado"><option value="">Todos</option>
+      {% for e in ['pendiente','despachada','entregada','anulada'] %}
+      <option value="{{ e }}" {{ 'selected' if estado==e }}>{{ e|capitalize }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-sm btn-claro">Filtrar</button>
+  <a href="/admin/remisiones" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ remisiones|length }} remisión(es)</h3></div>
+  {% if remisiones %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Cotización</th>
+      <th>Transportador</th><th>Recibido por</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for r in remisiones %}
+      <tr>
+        <td><a href="/admin/remisiones/{{ r.id }}" class="enlace-doc"><strong>{{ r.numero }}</strong></a></td>
+        <td class="silencio">{{ r.fecha }}</td>
+        <td>{{ r.razon_social }}</td>
+        <td class="silencio">{{ r.cot or '—' }}</td>
+        <td>{{ r.transportador or '—' }}{% if r.placa %}<div class="silencio">{{ r.placa }}</div>{% endif %}</td>
+        <td class="silencio">{{ r.recibido_por or '—' }}</td>
+        <td><span class="tag {{ r.estado|tag }}">{{ r.estado|bonito }}</span></td>
+        <td class="acc"><a href="/admin/remisiones/{{ r.id }}" class="btn btn-sm btn-claro">Ver</a></td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Aún no hay remisiones</b>
+    <p>Genérelas desde una cotización aprobada o créelas directamente.</p>
+    <a href="/admin/remisiones/nueva" class="btn" style="margin-top:1rem">+ Nueva remisión</a></div>
+  {% endif %}
+</div>
+{% endblock %}

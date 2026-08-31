@@ -1,0 +1,313 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Inventario — IMATEC S.A.S.{% endblock %}
+{% block encabezado %}Inventario de materiales{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm" onclick="nuevoItem()">+ Agregar ítem</button>
+<button class="btn btn-sm btn-claro" onclick="document.getElementById('m-importar').classList.remove('oculto')">Importar Excel</button>
+<a href="/admin/excel/descargar/control" class="btn btn-sm btn-claro">Descargar Excel</a>
+{% endblock %}
+
+{% block contenido %}
+<form class="herramientas" method="get" action="/admin/inventario">
+  <div class="campo crece">
+    <label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="ID artículo, descripción o notas…">
+  </div>
+  <div class="campo">
+    <label>Categoría</label>
+    <select name="categoria"><option value="">Todas</option>
+      {% for c in cats %}<option value="{{ c }}" {{ 'selected' if categoria==c }}>{{ c }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label>Material</label>
+    <select name="material"><option value="">Todos</option>
+      {% for m in mats %}<option value="{{ m }}" {{ 'selected' if material==m }}>{{ m }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label>Estado</label>
+    <select name="estado"><option value="">Todos</option>
+      <option value="disponible" {{ 'selected' if estado=='disponible' }}>Disponible</option>
+      <option value="agotado" {{ 'selected' if estado=='agotado' }}>No disponible</option>
+      <option value="bajo" {{ 'selected' if estado=='bajo' }}>Bajo mínimo</option>
+    </select>
+  </div>
+  <button class="btn btn-sm btn-claro" type="submit">Filtrar</button>
+  <a href="/admin/inventario" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab">
+    <h3>{{ materiales|length }} ítem(s){% if materiales|length != total %} de {{ total }}{% endif %}</h3>
+    <div class="acciones">
+      <span class="silencio">Mismas columnas de su Excel «Inventario Imatec»</span>
+    </div>
+  </div>
+  {% if materiales %}
+  <div class="tabla-envoltura">
+    <table class="datos">
+      <thead><tr>
+        <th>ID Artículo</th><th>Categoría</th><th>Material</th><th>Diámetro</th>
+        <th>Descripción</th><th class="num">Cantidad</th><th>Unidad</th><th>Estado</th>
+        <th>Notas</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for m in materiales %}
+        <tr>
+          <td><strong>{{ m.sku }}</strong></td>
+          <td>{{ m.categoria }}</td>
+          <td>{{ m.material }}</td>
+          <td class="mono">{{ m.diametro }}</td>
+          <td>{{ m.descripcion }}</td>
+          <td class="num"><strong>{{ m.cantidad|num }}</strong></td>
+          <td class="silencio">{{ m.unidad }}</td>
+          <td><span class="tag {{ 'tag-ok' if m.cantidad>0 else 'tag-error' }}">{{ m.estado }}</span>
+            {% if m.cantidad>0 and m.stock_minimo and m.cantidad<=m.stock_minimo %}
+            <span class="tag tag-alerta">Bajo mín.</span>{% endif %}</td>
+          <td class="silencio">{{ m.notas or '' }}
+            {% if not m.publicado %}<span class="tag">Oculto en web</span>{% endif %}</td>
+          <td class="acc">
+            <button class="btn btn-sm btn-claro" title="Entrada / salida"
+              onclick='moverItem({{ m.id }}, {{ m.sku|tojson }}, {{ m.unidad|tojson }}, {{ m.cantidad }})'>⇅</button>
+            <button class="btn btn-sm btn-claro" title="Editar"
+              onclick='editarItem({{ m|tojson }})'>✎</button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="vacio">
+    <b>No hay ítems con ese filtro</b>
+    <p>Agregue ítems uno por uno o importe su archivo de Excel completo.</p>
+    <div style="margin-top:1rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn" onclick="nuevoItem()">+ Agregar ítem</button>
+      <button class="btn btn-claro" onclick="document.getElementById('m-importar').classList.remove('oculto')">Importar Excel</button>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ================= Modal: agregar / editar ítem ================= -->
+<div class="modal-fondo oculto" id="m-item">
+  <div class="modal">
+    <form method="post" action="/admin/inventario/guardar">
+      <div class="modal-cab"><h3 id="m-item-titulo">Agregar ítem al inventario</h3>
+        <button type="button" onclick="cerrar('m-item')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="material_id" id="f-id">
+        <div class="fila-2">
+          <div class="campo">
+            <label>ID Artículo *</label>
+            <input type="text" name="sku" id="f-sku" required placeholder="TUB-INOX-2">
+            <div class="ayuda">Código único, como en su Excel (ej: TUB-GAL-12).</div>
+          </div>
+          <div class="campo">
+            <label>Categoría</label>
+            <input type="text" list="l-cat" name="categoria" id="f-categoria" value="Tuberías">
+            <datalist id="l-cat">{% for c in cats %}<option value="{{ c }}">{% endfor %}</datalist>
+            <div class="ayuda">Puede escribir una nueva y se agrega a la lista.</div>
+          </div>
+        </div>
+        <div class="fila-2">
+          <div class="campo">
+            <label>Material</label>
+            <input type="text" list="l-mat" name="material" id="f-material">
+            <datalist id="l-mat">{% for m in mats %}<option value="{{ m }}">{% endfor %}</datalist>
+          </div>
+          <div class="campo">
+            <label>Diámetro</label>
+            <input type="text" list="l-dia" name="diametro" id="f-diametro" placeholder='1/2"'>
+            <datalist id="l-dia">{% for d in diams %}<option value="{{ d }}">{% endfor %}</datalist>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Descripción *</label>
+          <input type="text" name="descripcion" id="f-descripcion" required
+                 placeholder='Tubería Inoxidable SCH10 2"'>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Cantidad</label>
+            <input type="number" name="cantidad" id="f-cantidad" step="0.01" value="0">
+          </div>
+          <div class="campo">
+            <label>Unidad</label>
+            <input type="text" list="l-uni" name="unidad" id="f-unidad" value="Metros">
+            <datalist id="l-uni">{% for u in unidades %}<option value="{{ u }}">{% endfor %}</datalist>
+          </div>
+          <div class="campo">
+            <label>Stock mínimo</label>
+            <input type="number" name="stock_minimo" id="f-minimo" step="0.01" value="0">
+            <div class="ayuda">Avisa cuando baje de aquí.</div>
+          </div>
+        </div>
+        <div class="fila">
+          <div class="campo">
+            <label>Costo unitario</label>
+            <input type="number" name="costo_unitario" id="f-costo" step="1" value="0">
+          </div>
+          <div class="campo">
+            <label>Proveedor</label>
+            <input type="text" name="proveedor" id="f-proveedor">
+          </div>
+          <div class="campo">
+            <label>Ubicación</label>
+            <input type="text" name="ubicacion" id="f-ubicacion" value="Bodega principal">
+          </div>
+        </div>
+        <div class="campo">
+          <label>Notas</label>
+          <input type="text" name="notas" id="f-notas">
+        </div>
+
+        <div style="background:var(--gris-100);padding:1rem 1.2rem;border-radius:6px;
+             border-left:3px solid var(--amarillo)">
+          <div class="fila-2">
+            <div class="campo" style="margin:0">
+              <label>Precio de venta ({{ 'por unidad' }})</label>
+              <input type="number" name="precio_venta" id="f-precio" value="0" step="100">
+              <div class="ayuda">Déjelo en 0 y en la web sale «Precio a cotizar».</div>
+            </div>
+            <div class="campo" style="margin:0;display:flex;flex-direction:column;
+                 justify-content:center">
+              <label class="check" style="margin-top:1.2rem">
+                <input type="checkbox" name="publicado" value="1" id="f-publicado" checked>
+                <span>Mostrar en el catálogo de la web</span></label>
+            </div>
+          </div>
+        </div>
+        <p class="silencio" style="margin:0">El estado (Disponible / No disponible) se calcula solo
+          a partir de la cantidad, igual que la fórmula de su Excel.</p>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-item')">Cancelar</button>
+        <button type="submit" class="btn">Guardar ítem</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= Modal: movimiento ================= -->
+<div class="modal-fondo oculto" id="m-mov">
+  <div class="modal" style="width:min(520px,100%)">
+    <form method="post" action="/admin/inventario/movimiento">
+      <div class="modal-cab"><h3>Movimiento de inventario</h3>
+        <button type="button" onclick="cerrar('m-mov')">×</button></div>
+      <div class="modal-cuerpo">
+        <input type="hidden" name="material_id" id="mv-id">
+        <div class="aviso aviso-info" id="mv-info" style="margin-bottom:1.2rem"></div>
+        <div class="fila-2">
+          <div class="campo">
+            <label>Tipo</label>
+            <select name="tipo" id="mv-tipo">
+              <option value="entrada">Entrada (compra / devolución)</option>
+              <option value="salida">Salida (consumo en obra)</option>
+              <option value="ajuste">Ajuste (dejar en cantidad exacta)</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label>Cantidad</label>
+            <input type="number" name="cantidad" id="mv-cant" step="0.01" required>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Motivo</label>
+          <input type="text" name="motivo" placeholder="Compra a proveedor / Consumo obra Clínica…">
+        </div>
+        <div class="campo">
+          <label>Documento de referencia</label>
+          <input type="text" name="documento" placeholder="Factura de compra, remisión, orden…">
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-mov')">Cancelar</button>
+        <button type="submit" class="btn">Registrar movimiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= Modal: importar ================= -->
+<div class="modal-fondo oculto" id="m-importar">
+  <div class="modal" style="width:min(560px,100%)">
+    <form method="post" action="/admin/inventario/importar" enctype="multipart/form-data">
+      <div class="modal-cab"><h3>Importar inventario desde Excel</h3>
+        <button type="button" onclick="cerrar('m-importar')">×</button></div>
+      <div class="modal-cuerpo">
+        <p>Suba su archivo <strong>Inventario IMATEC.xlsx</strong>. El sistema lee la hoja
+          «Inventario Imatec» con sus mismas columnas:</p>
+        <p class="silencio" style="background:var(--gris-100);padding:.8rem 1rem;border-radius:6px">
+          ID Artículo · Categoría · Material · Diametro · Descripción · Cantidad · Unidad ·
+          Estado · Notas</p>
+        <div class="campo">
+          <label>Archivo .xlsx</label>
+          <input type="file" name="archivo" accept=".xlsx,.xlsm" required>
+        </div>
+        <div class="aviso aviso-alerta" style="margin-bottom:0">
+          Los ítems que ya existan (mismo ID Artículo) se <strong>actualizan</strong>; los nuevos
+          se <strong>agregan</strong>. Nada se borra.
+        </div>
+      </div>
+      <div class="modal-pie">
+        <button type="button" class="btn btn-claro" onclick="cerrar('m-importar')">Cancelar</button>
+        <button type="submit" class="btn">Importar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function abrir(id){ document.getElementById(id).classList.remove('oculto'); }
+function cerrar(id){ document.getElementById(id).classList.add('oculto'); }
+
+function nuevoItem(){
+  document.getElementById('m-item-titulo').textContent = 'Agregar ítem al inventario';
+  ['f-id','f-sku','f-material','f-diametro','f-descripcion','f-proveedor','f-notas']
+    .forEach(i => document.getElementById(i).value = '');
+  document.getElementById('f-categoria').value = 'Tuberías';
+  document.getElementById('f-cantidad').value = 0;
+  document.getElementById('f-minimo').value = 0;
+  document.getElementById('f-costo').value = 0;
+  document.getElementById('f-unidad').value = 'Metros';
+  document.getElementById('f-ubicacion').value = 'Bodega principal';
+  document.getElementById('f-precio').value = 0;
+  document.getElementById('f-publicado').checked = true;
+  document.getElementById('f-sku').readOnly = false;
+  abrir('m-item');
+  setTimeout(()=>document.getElementById('f-sku').focus(), 60);
+}
+
+function editarItem(m){
+  document.getElementById('m-item-titulo').textContent = 'Editar ' + m.sku;
+  const v = {'f-id':m.id,'f-sku':m.sku,'f-categoria':m.categoria,'f-material':m.material,
+    'f-diametro':m.diametro,'f-descripcion':m.descripcion,'f-cantidad':m.cantidad,
+    'f-unidad':m.unidad,'f-minimo':m.stock_minimo,'f-costo':m.costo_unitario,
+    'f-proveedor':m.proveedor,'f-ubicacion':m.ubicacion,'f-notas':m.notas,
+    'f-precio':m.precio_venta};
+  for (const k in v) document.getElementById(k).value = (v[k] === null ? '' : v[k]);
+  document.getElementById('f-publicado').checked = !!m.publicado;
+  abrir('m-item');
+}
+
+function moverItem(id, sku, unidad, actual){
+  document.getElementById('mv-id').value = id;
+  document.getElementById('mv-cant').value = '';
+  document.getElementById('mv-info').innerHTML =
+    '<strong>' + sku + '</strong> — saldo actual: <strong>' + actual + ' ' + unidad + '</strong>';
+  abrir('m-mov');
+  setTimeout(()=>document.getElementById('mv-cant').focus(), 60);
+}
+
+document.querySelectorAll('.modal-fondo').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('oculto'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-fondo').forEach(m => m.classList.add('oculto'));
+});
+</script>
+{% endblock %}

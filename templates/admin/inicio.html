@@ -1,0 +1,121 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Dashboard — IMATEC S.A.S.{% endblock %}
+{% block encabezado %}Dashboard{% endblock %}
+{% block acciones %}
+<a href="/admin/cotizaciones/nueva" class="btn btn-sm">+ Cotización</a>
+<a href="/admin/inventario" class="btn btn-sm btn-claro">Inventario</a>
+{% endblock %}
+
+{% block contenido %}
+<div class="kpis">
+  <div class="kpi kpi-amarillo">
+    <div class="et">Solicitudes web nuevas</div>
+    <div class="val">{{ k.pedidos_nuevos }}</div>
+    <div class="sub"><a href="/admin/pedidos">Ver solicitudes →</a></div>
+  </div>
+  <div class="kpi kpi-info">
+    <div class="et">Cotizaciones abiertas</div>
+    <div class="val">{{ k.cot_abiertas }}</div>
+    <div class="sub">{{ k.cot_valor|cop }} en juego</div>
+  </div>
+  <div class="kpi kpi-alerta">
+    <div class="et">Por despachar</div>
+    <div class="val">{{ k.por_despachar }}</div>
+    <div class="sub"><a href="/admin/despachos">Ver despachos →</a></div>
+  </div>
+  <div class="kpi {{ 'kpi-error' if k.vencidas else 'kpi-ok' }}">
+    <div class="et">Cartera pendiente</div>
+    <div class="val">{{ k.cartera|cop }}</div>
+    <div class="sub">{% if k.vencidas %}<strong style="color:var(--error)">{{ k.vencidas }} factura(s) vencida(s)</strong>{% else %}Todo al día{% endif %}</div>
+  </div>
+  <div class="kpi kpi-ok">
+    <div class="et">Facturado este mes</div>
+    <div class="val">{{ k.facturado_mes|cop }}</div>
+    <div class="sub">{{ k.clientes }} clientes activos</div>
+  </div>
+  <div class="kpi {{ 'kpi-alerta' if k.bajo_min or k.agotados else '' }}">
+    <div class="et">Inventario</div>
+    <div class="val">{{ k.materiales }}</div>
+    <div class="sub">{{ k.agotados }} agotados · {{ k.bajo_min }} bajo mínimo</div>
+  </div>
+</div>
+
+<div class="rejilla rejilla-2" style="align-items:start">
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Solicitudes desde la web</h3>
+      <div class="acciones"><a href="/admin/pedidos" class="btn btn-sm btn-claro">Ver todas</a></div></div>
+    {% if pedidos %}
+    <div class="tabla-envoltura"><table class="datos">
+      <thead><tr><th>Número</th><th>Cliente</th><th>Fecha</th><th></th></tr></thead>
+      <tbody>{% for p in pedidos %}
+        <tr><td><strong>{{ p.numero }}</strong></td>
+            <td>{{ p.empresa or p.nombre_contacto }}<div class="silencio">{{ p.telefono }}</div></td>
+            <td class="silencio">{{ p.fecha[:10] }}</td>
+            <td class="acc"><a href="/admin/pedidos" class="btn btn-sm">Cotizar</a></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}<div class="vacio"><b>Sin solicitudes nuevas</b><p>Las solicitudes que envíen los clientes desde el catálogo aparecen aquí.</p></div>{% endif %}
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Alertas de inventario</h3>
+      <div class="acciones"><a href="/admin/inventario?estado=bajo" class="btn btn-sm btn-claro">Ver</a></div></div>
+    {% if alertas %}
+    <div class="tabla-envoltura"><table class="datos">
+      <thead><tr><th>ID</th><th>Descripción</th><th class="num">Saldo</th><th>Estado</th></tr></thead>
+      <tbody>{% for m in alertas %}
+        <tr><td><strong>{{ m.sku }}</strong></td><td>{{ m.descripcion }}</td>
+            <td class="num">{{ m.cantidad|num }} {{ m.unidad }}</td>
+            <td><span class="tag {{ 'tag-error' if m.cantidad<=0 else 'tag-alerta' }}">
+              {{ 'Agotado' if m.cantidad<=0 else 'Bajo mínimo' }}</span></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}<div class="vacio"><b>Inventario sin alertas</b><p>Ningún material está por debajo del mínimo.</p></div>{% endif %}
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Últimas cotizaciones</h3>
+      <div class="acciones"><a href="/admin/cotizaciones" class="btn btn-sm btn-claro">Ver todas</a></div></div>
+    {% if cotizaciones %}
+    <div class="tabla-envoltura"><table class="datos">
+      <thead><tr><th>Número</th><th>Cliente</th><th class="num">Total</th><th>Estado</th></tr></thead>
+      <tbody>{% for c in cotizaciones %}
+        <tr><td><a href="/admin/cotizaciones/{{ c.id }}" class="enlace-doc">{{ c.numero }}</a></td>
+            <td>{{ c.razon_social }}</td><td class="num">{{ c.total|cop }}</td>
+            <td><span class="tag {{ c.estado|tag }}">{{ c.estado|bonito }}</span></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}<div class="vacio"><b>Aún no hay cotizaciones</b>
+      <p><a href="/admin/cotizaciones/nueva" class="btn btn-sm" style="margin-top:.6rem">Crear la primera</a></p></div>{% endif %}
+  </div>
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Cartera por cobrar</h3>
+      <div class="acciones"><a href="/admin/facturas?estado=vencidas" class="btn btn-sm btn-claro">Vencidas</a></div></div>
+    {% if cartera %}
+    <div class="tabla-envoltura"><table class="datos">
+      <thead><tr><th>Factura</th><th>Cliente</th><th>Vence</th><th class="num">Saldo</th></tr></thead>
+      <tbody>{% for f in cartera %}
+        <tr><td><a href="/admin/facturas/{{ f.id }}" class="enlace-doc">{{ f.numero }}</a></td>
+            <td>{{ f.razon_social }}</td>
+            <td class="{{ 'silencio' if f.fecha_vencimiento >= hoy }}">
+              {% if f.fecha_vencimiento < hoy %}<span class="tag tag-error">{{ f.fecha_vencimiento }}</span>
+              {% else %}{{ f.fecha_vencimiento }}{% endif %}</td>
+            <td class="num"><strong>{{ f.saldo|cop }}</strong></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}<div class="vacio"><b>Sin cartera pendiente</b><p>No hay facturas con saldo por cobrar.</p></div>{% endif %}
+  </div>
+</div>
+
+{% if despachos %}
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Despachos en curso</h3>
+    <div class="acciones"><a href="/admin/despachos" class="btn btn-sm btn-claro">Gestionar despachos</a></div></div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Remisión</th><th>Cliente</th><th>Dirección</th><th>Transportador</th><th>Estado</th></tr></thead>
+    <tbody>{% for r in despachos %}
+      <tr><td><a href="/admin/remisiones/{{ r.id }}" class="enlace-doc">{{ r.numero }}</a></td>
+          <td>{{ r.razon_social }}</td><td class="silencio">{{ r.direccion_entrega or '—' }}</td>
+          <td>{{ r.transportador or '—' }}</td>
+          <td><span class="tag {{ r.estado|tag }}">{{ r.estado|bonito }}</span></td></tr>
+    {% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+{% endblock %}

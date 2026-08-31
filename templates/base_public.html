@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block titulo %}IMATEC S.A.S.{% endblock %}</title>
+<meta name="description" content="{% block descripcion %}Ferretería industrial en Cali: tubería, accesorios, bridas, válvulas, sistema ranurado, PVC y polietileno. Además fabricación de equipos en acero inoxidable, estructuras metálicas, obras civiles y extracción de núcleos.{% endblock %}">
+<link rel="icon" href="/static/img/favicon.png">
+<link rel="stylesheet" href="/static/css/imatec.css">
+</head>
+<body>
+
+<div class="barra-superior">
+  <div class="contenedor">
+    <span>📞 <a href="tel:{{ empresa.telefono|replace(' ','')|replace('-','') }}"><strong>{{ empresa.telefono }}</strong></a></span>
+    <span>📍 {{ empresa.direccion }}, {{ empresa.ciudad }}</span>
+    <span class="silencio" style="margin-left:auto;color:var(--gris)">{{ empresa.horario }}</span>
+  </div>
+</div>
+
+<header class="cabecera">
+  <div class="contenedor">
+    <a href="/" class="logo">
+      <img src="/static/img/logo-imatec.png" alt="IMATEC S.A.S.">
+      <span class="logo-texto">IMATEC<span>S.A.S.</span></span>
+    </a>
+    <button class="menu-btn" onclick="document.querySelector('.nav').classList.toggle('abierto')" aria-label="Menú">☰</button>
+    <nav class="nav">
+      <a href="/" class="{{ 'activo' if pagina=='inicio' }}">Inicio</a>
+      <a href="/servicios" class="{{ 'activo' if pagina=='servicios' }}">Servicios</a>
+      <a href="/catalogo" class="{{ 'activo' if pagina=='catalogo' }}">Catálogo</a>
+      <a href="/nosotros" class="{{ 'activo' if pagina=='nosotros' }}">Nosotros</a>
+      <a href="/contacto" class="{{ 'activo' if pagina=='contacto' }}">Contacto</a>
+      <div class="nav-acciones">
+        <a href="/carrito" class="carrito-btn">🛒 Solicitud <span class="carrito-num" id="carrito-num">0</span></a>
+        {% if usuario %}
+          <a href="{{ '/admin' if usuario.rol in ['admin','vendedor'] else '/portal' }}" class="btn btn-sm btn-oscuro">Mi cuenta</a>
+        {% else %}
+          <a href="/acceso" class="btn btn-sm btn-linea">Ingresar</a>
+        {% endif %}
+      </div>
+    </nav>
+  </div>
+</header>
+
+{% block contenido %}{% endblock %}
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie-rejilla">
+      <div>
+        <h4>La empresa</h4>
+        <p style="font-size:.92rem;line-height:1.7">
+          <strong style="color:#fff">Ferretería industrial:</strong> tubería en acero
+          galvanizado, acero al carbón e inoxidable · Accesorios, bridas y empaquetadura ·
+          Válvulas · Sistema ranurado · PVC, CPVC y polietileno.
+        </p>
+        <p style="font-size:.92rem;line-height:1.7">
+          <strong style="color:#fff">Taller y montaje:</strong> fabricación de equipos
+          industriales y hospitalarios en acero inoxidable · Estructuras metálicas ·
+          Obras civiles · Extracción de núcleos · Personal técnico calificado.
+        </p>
+        <p class="silencio" style="color:var(--gris)">Más de 30 años de experiencia en el suroccidente colombiano.</p>
+      </div>
+      <div>
+        <h4>Navegación</h4>
+        <a href="/">Inicio</a>
+        <a href="/servicios">Servicios</a>
+        <a href="/catalogo">Catálogo</a>
+        <a href="/nosotros">Nosotros</a>
+        <a href="/contacto">Contacto</a>
+        <a href="/acceso">Portal de clientes</a>
+      </div>
+      <div>
+        <h4>Información de contacto</h4>
+        <p style="font-size:.92rem;line-height:1.9;margin:0">
+          <strong style="color:#fff">Cel:</strong> <a href="tel:{{ empresa.telefono|replace(' ','')|replace('-','') }}" style="display:inline">{{ empresa.telefono }}</a><br>
+          <strong style="color:#fff">Dir:</strong> {{ empresa.direccion }}<br>
+          {{ empresa.ciudad }}, {{ empresa.departamento }}<br>
+          {% if empresa.email %}<strong style="color:#fff">Email:</strong> <a href="mailto:{{ empresa.email }}" style="display:inline">{{ empresa.email }}</a><br>{% endif %}
+          <strong style="color:#fff">Horario:</strong> {{ empresa.horario }}
+        </p>
+        <a href="/contacto" class="btn btn-sm" style="margin-top:1.2rem;display:inline-flex">Contáctenos</a>
+      </div>
+    </div>
+    <div class="pie-abajo">
+      <span>© {{ anio }} {{ empresa.razon_social }} — Todos los derechos reservados.</span>
+      <span>{{ empresa.ciudad }}, {{ empresa.departamento }} · Colombia ·
+        <a href="/creditos" style="display:inline">Créditos de imágenes</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/carrito.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

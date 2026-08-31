@@ -1,0 +1,95 @@
+{% extends "base_panel.html" %}
+{% block titulo %}{{ 'Editar' if c else 'Nueva' }} cotización — IMATEC{% endblock %}
+{% block encabezado %}{{ 'Editar cotización ' + c.numero if c else 'Nueva cotización' }}{% endblock %}
+{% block acciones %}
+<a href="/admin/cotizaciones" class="btn btn-sm btn-claro">Volver</a>
+{% if c %}<a href="/admin/cotizaciones/{{ c.id }}" class="btn btn-sm btn-claro">Ver documento</a>{% endif %}
+{% endblock %}
+
+{% block contenido %}
+<form method="post" action="/admin/cotizaciones/guardar" onsubmit="return prepararEnvio(event)">
+  <input type="hidden" name="items_json" id="items_json">
+  {% if c %}<input type="hidden" name="cotizacion_id" value="{{ c.id }}">{% endif %}
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Datos de la cotización</h3></div>
+    <div class="tarjeta-cuerpo">
+      <div class="fila">
+        <div class="campo" style="grid-column:span 2">
+          <label>Cliente *</label>
+          <select name="cliente_id" required>
+            <option value="">— Seleccione el cliente —</option>
+            {% for cl in clientes %}
+            <option value="{{ cl.id }}" {{ 'selected' if cliente_id and cl.id|string == cliente_id|string }}>
+              {{ cl.razon_social }} · {{ cl.documento }}</option>
+            {% endfor %}
+          </select>
+          <div class="ayuda">¿No está? <a href="/admin/clientes">Regístrelo primero</a>.</div>
+        </div>
+        <div class="campo">
+          <label>Fecha</label>
+          <input type="date" name="fecha" value="{{ c.fecha if c else hoy }}">
+        </div>
+        <div class="campo">
+          <label>Validez (días)</label>
+          <input type="number" name="validez_dias" value="{{ c.validez_dias if c else 15 }}">
+        </div>
+      </div>
+      <div class="fila">
+        <div class="campo">
+          <label>Tiempo de entrega</label>
+          <input type="text" name="tiempo_entrega"
+                 value="{{ c.tiempo_entrega if c else '15 días hábiles' }}">
+        </div>
+        <div class="campo">
+          <label>Forma de pago</label>
+          <input type="text" name="forma_pago"
+                 value="{{ c.forma_pago if c else '50% anticipo, 50% contra entrega' }}">
+        </div>
+        <div class="campo">
+          <label>Descuento global ($)</label>
+          <input type="number" id="descuento" name="descuento" step="1"
+                 value="{{ c.descuento|round|int if c else 0 }}" onchange="pintarItems()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% with con_impuestos = true %}{% include "admin/_editor_items.html" %}{% endwith %}
+
+  <div class="tarjeta">
+    <div class="tarjeta-cab"><h3>Condiciones y notas</h3></div>
+    <div class="tarjeta-cuerpo">
+      <div class="fila-2">
+        <div class="campo">
+          <label>Condiciones comerciales</label>
+          <textarea name="condiciones" placeholder="Garantía, alcance, exclusiones…">{{ c.condiciones if c else '' }}</textarea>
+        </div>
+        <div class="campo">
+          <label>Notas internas / para el cliente</label>
+          <textarea name="notas">{{ c.notas if c else '' }}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:.7rem;justify-content:flex-end;flex-wrap:wrap">
+    <a href="/admin/cotizaciones" class="btn btn-claro">Cancelar</a>
+    <button type="submit" class="btn btn-lg">Guardar cotización</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/editor.js"></script>
+<script>
+const PRODUCTOS = {{ productos|tojson }};
+IVA_DEFECTO = {{ iva_defecto }};
+CON_IMPUESTOS = true;
+ITEMS = {{ (c['items'] if c else [])|tojson }};
+document.addEventListener('DOMContentLoaded', () => {
+  if (!ITEMS.length) agregarFila();
+  pintarItems();
+});
+</script>
+{% endblock %}

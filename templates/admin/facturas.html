@@ -1,0 +1,55 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Facturas — IMATEC{% endblock %}
+{% block encabezado %}Facturas{% endblock %}
+{% block acciones %}<a href="/admin/facturas/nueva" class="btn btn-sm">+ Nueva factura</a>{% endblock %}
+{% block contenido %}
+{% if not dian_lista %}
+<div class="aviso aviso-alerta">
+  <strong>Facturación electrónica sin habilitar.</strong>
+  Las facturas se generan, numeran e imprimen, y se calcula el CUFE, pero
+  <strong>no se transmiten a la DIAN</strong> hasta cargar el NIT, la resolución de numeración
+  y la clave técnica en <a href="/admin/configuracion">Configuración</a>.
+</div>
+{% endif %}
+
+<form class="herramientas" method="get">
+  <div class="campo crece"><label>Buscar</label>
+    <input type="search" name="q" value="{{ q }}" placeholder="Número, cliente o NIT…"></div>
+  <div class="campo"><label>Estado</label>
+    <select name="estado"><option value="">Todas</option>
+      <option value="vencidas" {{ 'selected' if estado=='vencidas' }}>⚠ Vencidas</option>
+      {% for e in ['borrador','emitida','aceptada','pagada','anulada'] %}
+      <option value="{{ e }}" {{ 'selected' if estado==e }}>{{ e|capitalize }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-sm btn-claro">Filtrar</button>
+  <a href="/admin/facturas" class="btn btn-sm btn-claro">Limpiar</a>
+</form>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>{{ facturas|length }} factura(s)</h3></div>
+  {% if facturas %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Vence</th>
+      <th class="num">Total</th><th class="num">Saldo</th><th>Estado</th><th></th></tr></thead>
+    <tbody>{% for f in facturas %}
+      <tr>
+        <td><a href="/admin/facturas/{{ f.id }}" class="enlace-doc"><strong>{{ f.numero }}</strong></a></td>
+        <td class="silencio">{{ f.fecha_emision }}</td>
+        <td>{{ f.razon_social }}<div class="silencio">{{ f.documento }}</div></td>
+        <td>{% if f.saldo > 0 and f.fecha_vencimiento < hoy and f.estado not in ['anulada','borrador'] %}
+              <span class="tag tag-error">{{ f.fecha_vencimiento }}</span>
+            {% else %}<span class="silencio">{{ f.fecha_vencimiento }}</span>{% endif %}</td>
+        <td class="num">{{ f.total|cop }}</td>
+        <td class="num">{% if f.saldo > 0 %}<strong>{{ f.saldo|cop }}</strong>{% else %}
+          <span class="silencio">—</span>{% endif %}</td>
+        <td><span class="tag {{ f.estado|tag }}">{{ f.estado|bonito }}</span></td>
+        <td class="acc"><a href="/admin/facturas/{{ f.id }}" class="btn btn-sm btn-claro">Ver</a></td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}
+  <div class="vacio"><b>Aún no hay facturas</b>
+    <p>Genérelas desde una remisión entregada, desde una cotización aprobada o desde cero.</p>
+    <a href="/admin/facturas/nueva" class="btn" style="margin-top:1rem">+ Nueva factura</a></div>
+  {% endif %}
+</div>
+{% endblock %}

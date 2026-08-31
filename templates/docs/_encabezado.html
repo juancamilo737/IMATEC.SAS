@@ -1,0 +1,16 @@
+<div class="doc-cab">
+  <img src="/static/img/logo-imatec.png" alt="IMATEC S.A.S.">
+  <div class="doc-emisor">
+    <b>{{ empresa.razon_social }}</b>
+    {% if empresa.nit %}NIT {{ empresa.nit }}{% if empresa.dv %}-{{ empresa.dv }}{% endif %} · {% endif %}
+    {{ empresa.regimen }}<br>
+    {{ empresa.direccion }} · {{ empresa.ciudad }}, {{ empresa.departamento }}<br>
+    Tel: {{ empresa.telefono }}{% if empresa.email %} · {{ empresa.email }}{% endif %}<br>
+    {{ empresa.web }}
+  </div>
+  <div class="doc-tipo">
+    <span class="clase">{{ clase }}</span>
+    <div class="numero">{{ numero }}</div>
+    <div class="meta">{{ meta|safe }}</div>
+  </div>
+</div>

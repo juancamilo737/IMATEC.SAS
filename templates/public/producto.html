@@ -1,0 +1,166 @@
+{% extends "base_public.html" %}
+{% block titulo %}{{ p.nombre }} — IMATEC S.A.S.{% endblock %}
+
+{% block scripts %}
+<script>
+function agregarMedida(id, diametro, sku, unidad, precio, disponible){
+  const cant = parseFloat(document.getElementById('c-' + id).value) || 1;
+  agregarAlCarrito({
+    id: 'm' + id,
+    sku: sku,
+    nombre: {{ p.nombre|tojson }} + ' ' + diametro,
+    categoria: {{ p.categoria|tojson }},
+    unidad: unidad,
+    precio: precio || 0
+  }, cant, disponible ? '' : 'Sobre pedido — confirmar tiempo de entrega');
+}
+</script>
+{% endblock %}
+{% block descripcion %}{{ p.descripcion }}{% endblock %}
+{% block contenido %}
+<section class="seccion">
+  <div class="contenedor">
+    <p class="silencio" style="margin-bottom:1.6rem">
+      <a href="/catalogo">Catálogo</a> ›
+      <a href="/catalogo?cat={{ p.categoria_slug }}">{{ p.categoria }}</a> ›
+      <span>{{ p.nombre }}</span>
+    </p>
+
+    <div class="ficha">
+      <div class="ficha-galeria">
+        {% if p.imagen %}
+          <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }}">
+        {% else %}
+          <div style="aspect-ratio:4/3;background:var(--gris-100);display:flex;align-items:center;
+               justify-content:center;border-radius:6px;color:var(--gris);font-family:var(--titulo);
+               font-weight:800;letter-spacing:.1em">IMATEC S.A.S.</div>
+        {% endif %}
+      </div>
+
+      <div>
+        <div class="producto-cat">{{ p.categoria }}</div>
+        <h1 style="font-size:2.1rem">{{ p.nombre }}</h1>
+        <p style="font-size:1.05rem;color:var(--gris-600)">{{ p.descripcion }}</p>
+
+        {% if p.especificaciones %}
+        <div class="ficha-specs">
+          <h4>Especificaciones técnicas</h4>
+          <ul>{% for e in p.especificaciones.split('·') %}{% if e.strip() %}<li>{{ e.strip() }}</li>{% endif %}{% endfor %}</ul>
+        </div>
+        {% endif %}
+
+        <div class="datos-linea">
+          <div><span>Referencia</span><b>{{ p.sku }}</b></div>
+          <div><span>Material</span><b>{{ p.material }}</b></div>
+          <div><span>Unidad</span><b>{{ p.unidad }}</b></div>
+          {% if medidas %}
+          <div><span>Diámetros</span><b>{{ medidas|length }}</b></div>
+          <div><span>En bodega</span><b>{{ medidas|selectattr('disponible')|list|length }}</b></div>
+          {% else %}
+          <div><span>Entrega</span><b>{{ p.dias_entrega }} días</b></div>
+          {% endif %}
+        </div>
+
+        {% if medidas %}
+        <div class="medidas">
+          <div class="medidas-cab">
+            <h4>Diámetros y existencia en bodega</h4>
+            <span class="silencio">Actualizado en tiempo real desde el inventario</span>
+          </div>
+          <div class="tabla-envoltura">
+            <table class="tabla-medidas">
+              <thead><tr>
+                <th>Diámetro</th><th>Referencia</th><th class="num">Existencia</th>
+                <th>Estado</th><th class="num" style="width:120px">Cantidad</th><th></th>
+              </tr></thead>
+              <tbody>
+              {% for m in medidas %}
+                <tr class="{{ '' if m.disponible else 'agotado' }}">
+                  <td><strong class="mono">{{ m.diametro }}</strong></td>
+                  <td class="silencio mono">{{ m.sku }}</td>
+                  <td class="num">{% if m.disponible %}{{ m.cantidad|num }} {{ m.unidad|lower }}
+                      {% else %}<span class="silencio">—</span>{% endif %}</td>
+                  <td>{% if m.disponible %}<span class="tag tag-ok">Disponible</span>
+                      {% else %}<span class="tag">Sobre pedido</span>{% endif %}</td>
+                  <td class="num">
+                    <input type="number" min="0.1" step="0.1" value="1"
+                           id="c-{{ m.id }}" aria-label="Cantidad de {{ m.diametro }}"></td>
+                  <td class="acc">
+                    <button class="btn btn-sm"
+                      onclick='agregarMedida({{ m.id }}, {{ m.diametro|tojson }}, {{ m.sku|tojson }}, {{ m.unidad|tojson }}, {{ (m.precio_venta or 0) }}, {{ m.disponible|tojson }})'>
+                      Agregar</button></td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="silencio" style="margin:1rem 0 0">
+            Lo marcado <strong>Sobre pedido</strong> no está en bodega hoy, pero lo conseguimos:
+            agréguelo igual y le confirmamos el tiempo de entrega en la cotización.
+            Los precios se confirman en la cotización.
+          </p>
+        </div>
+        {% endif %}
+
+        <div style="background:var(--gris-100);padding:1.5rem;border-radius:6px;
+             border-top:4px solid var(--amarillo)">
+          {% if p.precio and p.precio > 0 %}
+            <div style="margin-bottom:1rem">
+              <span class="silencio">Precio unitario</span>
+              <div class="precio" style="font-size:1.9rem">{{ p.precio|cop }}
+                <span class="silencio" style="font-weight:400">+ IVA {{ p.iva_pct|round|int }}%</span></div>
+            </div>
+          {% elif medidas %}
+            <p style="margin-bottom:1rem"><strong>Precio a cotizar.</strong>
+              El valor por metro depende del diámetro y del calibre. Elija arriba las medidas
+              que necesita y le enviamos la cotización sin costo.</p>
+          {% else %}
+            <p style="margin-bottom:1rem"><strong>Precio a cotizar.</strong>
+              Este producto se fabrica a la medida: el valor depende de dimensiones,
+              calibre y acabado. Agréguelo a su solicitud y le enviamos la cotización sin costo.</p>
+          {% endif %}
+
+          {% if medidas %}
+          <p style="margin:0 0 1rem"><strong>¿Necesita otra medida o un corte especial?</strong>
+            Escríbanos el detalle aquí abajo y lo agregamos a su solicitud.</p>
+          {% endif %}
+          <div style="display:flex;gap:.8rem;align-items:end;flex-wrap:wrap">
+            <div class="campo" style="margin:0;width:110px">
+              <label for="cant">Cantidad</label>
+              <input type="number" id="cant" value="1" min="1" step="1">
+            </div>
+            <button class="btn btn-lg" style="flex:1;min-width:200px"
+              onclick='agregarAlCarrito({{ p|tarjeta_json }}, document.getElementById("cant").value, document.getElementById("obs").value)'>
+              Agregar a mi solicitud
+            </button>
+          </div>
+          <div class="campo" style="margin:1rem 0 0">
+            <label for="obs">Medidas o detalles (opcional)</label>
+            <textarea id="obs" style="min-height:70px"
+              placeholder="Ej: 1.80 m x 0.70 m x 0.90 m de alto, con entrepaño y espaldar de 10 cm"></textarea>
+          </div>
+        </div>
+
+        <p class="silencio" style="margin-top:1.2rem">
+          ¿Necesita algo diferente? Fabricamos bajo plano.
+          <a href="/contacto" style="border-bottom:1px solid var(--amarillo)">Escríbanos</a> o
+          llame al <a href="tel:{{ empresa.telefono|replace(' ','')|replace('-','') }}"
+          style="border-bottom:1px solid var(--amarillo)">{{ empresa.telefono }}</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if relacionados %}
+<section class="seccion seccion-gris">
+  <div class="contenedor">
+    <div class="titulo-seccion"><div class="kicker">También le puede servir</div>
+      <h2>Otros productos de {{ p.categoria }}</h2></div>
+    <div class="rejilla rejilla-4">
+      {% for p in relacionados %}{% include "public/_tarjeta_producto.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

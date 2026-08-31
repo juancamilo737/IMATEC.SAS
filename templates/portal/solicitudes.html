@@ -1,0 +1,32 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Mis solicitudes — IMATEC{% endblock %}
+{% block encabezado %}Mis solicitudes{% endblock %}
+{% block acciones %}<a href="/catalogo" class="btn btn-sm">Nueva solicitud</a>{% endblock %}
+{% block contenido %}
+{% if pedidos %}
+{% for p in pedidos %}
+<div class="tarjeta">
+  <div class="tarjeta-cab">
+    <h3>{{ p.numero }}</h3>
+    <span class="tag {{ p.estado|tag }}">{{ p.estado|bonito }}</span>
+    <span class="silencio">{{ p.fecha[:10] }}</span>
+  </div>
+  {% if p.notas %}<div class="tarjeta-cuerpo" style="padding-bottom:0">
+    <div class="aviso aviso-info" style="margin-bottom:0"><strong>Su nota:</strong> {{ p.notas }}</div></div>{% endif %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Producto</th><th class="num">Cantidad</th><th>Detalles</th></tr></thead>
+    <tbody>{% for i in p['items'] %}
+      <tr><td>{{ i.descripcion }}</td><td class="num">{{ i.cantidad|num }} {{ i.unidad }}</td>
+          <td class="silencio">{{ i.observacion or '—' }}</td></tr>
+    {% endfor %}</tbody></table></div>
+</div>
+{% endfor %}
+{% else %}
+<div class="tarjeta"><div class="vacio">
+  <b>Aún no ha enviado solicitudes</b>
+  <p>Elija productos del catálogo, indique medidas y envíenos la solicitud.
+     Le respondemos con una cotización.</p>
+  <a href="/catalogo" class="btn" style="margin-top:1rem">Ir al catálogo</a>
+</div></div>
+{% endif %}
+{% endblock %}
