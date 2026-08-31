@@ -1,7 +1,7 @@
 <article class="producto">
   <a href="/producto/{{ p.slug }}" class="producto-img">
     {% if p.imagen %}
-      <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }}" loading="lazy">
+      <img src="{{ p.imagen|img }}" alt="{{ p.nombre }}" loading="lazy">
     {% else %}
       <div class="sin-foto">{{ p.categoria }}<small>Foto próximamente</small></div>
     {% endif %}

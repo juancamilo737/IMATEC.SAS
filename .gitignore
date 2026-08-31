@@ -5,3 +5,7 @@ data/imatec.db*
 data/uploads/*
 data/excel/*.xlsx
 .DS_Store
+
+# clave de sesión generada automáticamente
+data/.clave_sesion
+.env

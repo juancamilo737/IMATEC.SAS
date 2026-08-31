@@ -27,7 +27,7 @@
     <tbody>{% for p in productos %}
       <tr>
         <td style="width:56px">{% if p.imagen %}
-          <img src="/static/img/{{ p.imagen }}" alt="" style="width:44px;height:44px;
+          <img src="{{ p.imagen|img }}" alt="" style="width:44px;height:44px;
                object-fit:cover;border-radius:4px">{% endif %}</td>
         <td class="mono">{{ p.sku }}</td>
         <td><strong>{{ p.nombre }}</strong></td>

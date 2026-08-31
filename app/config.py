@@ -1,21 +1,66 @@
 """Configuración central de la aplicación IMATEC S.A.S."""
 import os
+import secrets
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
+
+# ---------------------------------------------------------------------
+#  Dónde viven los datos.
+#  En el computador de la oficina: ./data
+#  En Railway (o cualquier servidor): la carpeta del disco persistente,
+#  que se indica con la variable IMATEC_DATA_DIR (por ejemplo /datos).
+#  Es indispensable que apunte a un disco persistente: el sistema de
+#  archivos del contenedor se borra en cada despliegue.
+# ---------------------------------------------------------------------
+DATA_DIR = Path(os.environ.get("IMATEC_DATA_DIR", BASE_DIR / "data")).resolve()
 EXCEL_DIR = DATA_DIR / "excel"
-UPLOAD_DIR = DATA_DIR / "uploads"
+UPLOAD_DIR = DATA_DIR / "uploads"          # importaciones y copias de la base
+IMAGENES_DIR = DATA_DIR / "imagenes"       # fotos que se suben desde el panel
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
 DB_PATH = DATA_DIR / "imatec.db"
 
-for _d in (DATA_DIR, EXCEL_DIR, UPLOAD_DIR):
+for _d in (DATA_DIR, EXCEL_DIR, UPLOAD_DIR, IMAGENES_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
-SECRET_KEY = os.environ.get("IMATEC_SECRET_KEY", "cambie-esta-clave-en-produccion-imatec-sas")
+EN_PRODUCCION = bool(os.environ.get("RAILWAY_ENVIRONMENT") or
+                     os.environ.get("IMATEC_PRODUCCION"))
+
+
+def _clave_secreta() -> str:
+    """Clave con la que se firman las sesiones.
+
+    Prioridad: variable de entorno > clave guardada en el disco persistente >
+    clave nueva generada al azar. Nunca se usa una clave que esté en el código
+    fuente: cualquiera que lea el repositorio podría falsificar sesiones.
+    """
+    clave = os.environ.get("IMATEC_SECRET_KEY", "").strip()
+    if clave:
+        return clave
+    archivo = DATA_DIR / ".clave_sesion"
+    if archivo.exists():
+        guardada = archivo.read_text(encoding="utf-8").strip()
+        if guardada:
+            return guardada
+    nueva = secrets.token_urlsafe(48)
+    try:
+        archivo.write_text(nueva, encoding="utf-8")
+        archivo.chmod(0o600)
+    except OSError:
+        pass
+    return nueva
+
+
+SECRET_KEY = _clave_secreta()
 SESSION_COOKIE = "imatec_session"
-SESSION_MAX_AGE = 60 * 60 * 12  # 12 horas
+SESSION_MAX_AGE = 60 * 60 * 12          # 12 horas
+COOKIE_SEGURA = EN_PRODUCCION           # sólo por HTTPS cuando está publicado
+
+# Contraseña del primer administrador. En producción se debe fijar por variable
+# de entorno; si no, se genera una al azar y se muestra una sola vez en el log.
+ADMIN_EMAIL = os.environ.get("IMATEC_ADMIN_EMAIL", "admin@imatecsas.com")
+ADMIN_PASSWORD = os.environ.get("IMATEC_ADMIN_PASSWORD", "")
 
 # --- Identidad de marca (extraída del logo oficial en imatecsas.com) ---
 BRAND = {

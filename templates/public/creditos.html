@@ -18,7 +18,7 @@
           <tbody>
           {% for archivo, c in creditos.items() %}
             <tr>
-              <td style="width:90px"><img src="/static/img/{{ archivo }}" alt="{{ c.titulo }}"
+              <td style="width:90px"><img src="{{ archivo|img }}" alt="{{ c.titulo }}"
                    style="width:74px;height:56px;object-fit:cover;border-radius:4px"></td>
               <td>{{ c.autor }}</td>
               <td><span class="tag">{{ c.licencia }}</span></td>

@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 
 from .. import db
 from ..auth import autenticar, current_user, es_staff, make_session
-from ..config import SESSION_COOKIE, SESSION_MAX_AGE
+from ..config import COOKIE_SEGURA, SESSION_COOKIE, SESSION_MAX_AGE
 from ..documentos import crear_pedido, pedido_completo
 
 router = APIRouter()
@@ -237,7 +237,7 @@ def acceso_enviar(request: Request, email: str = Form(...), password: str = Form
     ruta = destino or ("/admin" if u["rol"] in ("admin", "vendedor") else "/portal")
     resp = RedirectResponse(ruta, status_code=303)
     resp.set_cookie(SESSION_COOKIE, make_session(dict(u)), max_age=SESSION_MAX_AGE,
-                    httponly=True, samesite="lax")
+                    httponly=True, samesite="lax", secure=COOKIE_SEGURA)
     return resp
 
 

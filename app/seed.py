@@ -1,7 +1,9 @@
 """Carga inicial: catálogo real de IMATEC (tomado de imatecsas.com), usuarios y listas."""
+import secrets
+
 from . import db
 from .auth import crear_usuario
-from .config import EMPRESA_DEFAULT
+from .config import ADMIN_EMAIL, ADMIN_PASSWORD, EMPRESA_DEFAULT, EN_PRODUCCION
 from .utils import slugify
 
 CATEGORIAS = [
@@ -301,8 +303,34 @@ def sembrar_config() -> None:
 
 
 def sembrar_usuarios() -> None:
-    if not db.q1("SELECT 1 FROM usuarios WHERE rol='admin'"):
-        crear_usuario("admin@imatecsas.com", "Imatec2026*", "Administrador IMATEC", "admin")
+    """Crea el primer administrador si no existe.
+
+    La contraseña sale de IMATEC_ADMIN_PASSWORD. Si no está definida se genera
+    una al azar y se imprime UNA SOLA VEZ en el log: nunca se deja una
+    contraseña fija escrita en el código, porque el repositorio es legible.
+    """
+    if db.q1("SELECT 1 FROM usuarios WHERE rol='admin'"):
+        return
+    clave = ADMIN_PASSWORD.strip()
+    generada = False
+    if not clave:
+        if EN_PRODUCCION:
+            clave = secrets.token_urlsafe(12)
+            generada = True
+        else:
+            clave = "Imatec2026*"          # sólo para trabajar en el computador
+    crear_usuario(ADMIN_EMAIL, clave, "Administrador IMATEC", "admin")
+    print("\n" + "=" * 64)
+    print("  USUARIO ADMINISTRADOR CREADO")
+    print(f"  Correo:     {ADMIN_EMAIL}")
+    if generada:
+        print(f"  Contraseña: {clave}")
+        print("  ⚠  Anótela AHORA: no se vuelve a mostrar.")
+        print("     Cámbiela al entrar, o fije IMATEC_ADMIN_PASSWORD.")
+    else:
+        print("  Contraseña: la que se definió en IMATEC_ADMIN_PASSWORD"
+              if ADMIN_PASSWORD.strip() else "  Contraseña: Imatec2026*  (sólo para uso local)")
+    print("=" * 64 + "\n", flush=True)
 
 
 def sembrar_todo() -> None:

@@ -232,22 +232,24 @@ para que nadie la dé por radicada.
 
 ## 5. Publicarlo en internet
 
-Hoy corre en el computador. Para que los clientes entren desde afuera hay dos caminos:
+El sistema ya está preparado para publicarse en **Railway**. El paso a paso completo
+está en **[DESPLIEGUE.md](DESPLIEGUE.md)**.
 
-- **Subdominio junto al sitio actual** (recomendado): dejar el WordPress en
-  `imatecsas.com` y publicar esto en `tienda.imatecsas.com` o `app.imatecsas.com`.
-  El sitio actual solo necesita un enlace nuevo en su menú.
-- **Reemplazar el sitio actual**: apuntar `imatecsas.com` a esta aplicación. El sitio
-  público de aquí ya trae el mismo contenido (servicios, nosotros, proyectos, contacto).
+Resumen de lo que hay que hacer allá:
 
-Para producción hay que cambiar dos cosas:
+1. Subir el código (GitHub o `railway up`).
+2. **Crear un Volume con mount path `/datos`.** Sin esto se pierden los datos en cada
+   actualización — es el punto crítico.
+3. Definir las variables `IMATEC_DATA_DIR=/datos`, `IMATEC_SECRET_KEY`,
+   `IMATEC_ADMIN_EMAIL` y `IMATEC_ADMIN_PASSWORD`.
+4. Generar el dominio y comprobar `/salud`.
+5. Importar el Excel del inventario una sola vez.
 
-```bash
-export IMATEC_SECRET_KEY="una-clave-larga-y-secreta"   # firma las sesiones
-```
+Para el dominio propio conviene dejar el WordPress en `imatecsas.com` y publicar esto
+en `tienda.imatecsas.com`, agregando un enlace en el menú del sitio actual.
 
-y servir detrás de HTTPS. La base SQLite aguanta bien esta operación; si en el futuro
-crece mucho, se migra a PostgreSQL sin cambiar la lógica.
+La base SQLite aguanta bien esta operación; si en el futuro crece mucho, se migra a
+PostgreSQL sin cambiar la lógica de negocio.
 
 ---
 

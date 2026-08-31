@@ -29,7 +29,7 @@ function agregarMedida(id, diametro, sku, unidad, precio, disponible){
     <div class="ficha">
       <div class="ficha-galeria">
         {% if p.imagen %}
-          <img src="/static/img/{{ p.imagen }}" alt="{{ p.nombre }}">
+          <img src="{{ p.imagen|img }}" alt="{{ p.nombre }}">
         {% else %}
           <div style="aspect-ratio:4/3;background:var(--gris-100);display:flex;align-items:center;
                justify-content:center;border-radius:6px;color:var(--gris);font-family:var(--titulo);

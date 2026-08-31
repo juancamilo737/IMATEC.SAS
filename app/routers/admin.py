@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 
 from .. import db, documentos as D, excel_sync
 from ..auth import crear_usuario, current_user, es_staff, hash_password
-from ..config import DB_PATH, UPLOAD_DIR
+from ..config import DB_PATH, IMAGENES_DIR, UPLOAD_DIR
 from ..db import estado_material
 from ..utils import slugify
 
@@ -811,14 +811,12 @@ def catalogo_guardar(request: Request, nombre: str = Form(...), sku: str = Form(
         return r
     ruta_img = None
     if imagen and imagen.filename:
-        carpeta = UPLOAD_DIR.parent.parent / "static" / "img" / "productos"
-        carpeta.mkdir(parents=True, exist_ok=True)
         ext = "." + imagen.filename.rsplit(".", 1)[-1].lower()
         if ext in (".jpg", ".jpeg", ".png", ".webp"):
-            nombre_arch = f"{slugify(sku)}-{datetime.now():%H%M%S}{ext}"
-            with (carpeta / nombre_arch).open("wb") as f:
+            nombre_arch = f"{slugify(sku)}-{datetime.now():%Y%m%d%H%M%S}{ext}"
+            with (IMAGENES_DIR / nombre_arch).open("wb") as f:
                 shutil.copyfileobj(imagen.file, f)
-            ruta_img = f"productos/{nombre_arch}"
+            ruta_img = f"/subidas/{nombre_arch}"
 
     campos = (sku.strip(), nombre.strip(), categoria_id, descripcion, especificaciones, material,
               unidad, precio, iva_pct, dias_entrega, 1 if destacado else 0, 1 if activo else 0)
