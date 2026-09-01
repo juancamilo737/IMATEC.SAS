@@ -9,3 +9,5 @@ data/excel/*.xlsx
 # clave de sesión generada automáticamente
 data/.clave_sesion
 .env
+# archivos de trabajo del cliente (no van al repositorio público)
+Archivos/

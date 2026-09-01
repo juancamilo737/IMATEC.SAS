@@ -1,8 +1,10 @@
 {% extends "base_panel.html" %}
-{% block titulo %}Remisión {{ r.numero }} — IMATEC{% endblock %}
+{% block titulo %}{{ nombre_archivo('REM', r.numero, r.cliente.razon_social) }}{% endblock %}
 {% block encabezado %}Remisión {{ r.numero }}{% endblock %}
 {% block acciones %}
-<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+<button class="btn btn-sm" onclick="window.print()"
+        title="Se abre el diálogo de impresión: elija «Guardar como PDF»">⬇ Descargar PDF</button>
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir</button>
 {% if panel %}
   {% if r.estado == 'entregada' and not r.facturas %}
   <form method="post" action="/admin/remisiones/facturar" style="margin:0">

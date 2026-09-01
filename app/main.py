@@ -11,7 +11,7 @@ from . import db
 from .auth import current_user, es_staff
 from .config import EN_PRODUCCION, IMAGENES_DIR, STATIC_DIR, TEMPLATES_DIR
 from .seed import sembrar_todo
-from .utils import cop, fecha_larga, num, numero_a_letras
+from .utils import cop, fecha_larga, nombre_archivo, num, numero_a_letras
 
 app = FastAPI(title="IMATEC S.A.S.", docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -49,6 +49,7 @@ ESTADOS_TAG = {
     "pagada": "tag-ok", "anulada": "tag-error", "cerrado": "tag-ok",
 }
 plantillas.env.filters["tag"] = lambda e: ESTADOS_TAG.get(e, "")
+plantillas.env.globals["nombre_archivo"] = nombre_archivo
 plantillas.env.filters["bonito"] = lambda e: str(e or "").replace("_", " ").capitalize()
 
 

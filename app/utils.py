@@ -111,3 +111,28 @@ def numero_a_letras(valor) -> str:
     if unidades:
         partes.append(_c(unidades))
     return " ".join(partes) + " PESOS M/CTE"
+
+
+def nombre_archivo(tipo: str, numero: str, razon_social: str) -> str:
+    """Nombre con el que se guarda el PDF, igual al que IMATEC ya usa en sus
+    carpetas: «FEV-688 PARQUES ACUATICOS S.A.S.», «COT 01 GAS PIPE SOLUTIONS SAS».
+
+    El navegador toma el <title> de la página como nombre del archivo, así que
+    de ahí sale el nombre sin que nadie tenga que escribirlo a mano.
+    """
+    num = str(numero or "").strip()
+    if tipo == "COT":
+        # COT-2026-0001 -> «COT 1»: se usa el consecutivo, no el año
+        partes = num.split("-")
+        corto = partes[-1].lstrip("0") or "0" if len(partes) > 1 else num
+        etiqueta = f"COT {corto}"
+    elif tipo == "REM":
+        partes = num.split("-")
+        corto = partes[-1].lstrip("0") or "0" if len(partes) > 1 else num
+        etiqueta = f"REM {corto}"
+    else:
+        etiqueta = num                      # las facturas ya vienen como FEV-688
+    limpio = " ".join(str(razon_social or "").split())
+    for c in '/\\:*?"<>|':
+        limpio = limpio.replace(c, "")
+    return f"{etiqueta} {limpio}".strip()

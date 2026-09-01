@@ -1,8 +1,11 @@
 {% extends "base_panel.html" %}
-{% block titulo %}Factura {{ f.numero }} — IMATEC{% endblock %}
+{% block titulo %}{{ nombre_archivo('FEV', f.numero, f.cliente.razon_social) }}{% endblock %}
 {% block encabezado %}Factura {{ f.numero }}{% endblock %}
 {% block acciones %}
-<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+<button class="btn btn-sm" onclick="window.print()"
+        title="Se abre el diálogo de impresión: elija «Guardar como PDF» para enviarla">
+  ⬇ Descargar PDF</button>
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir</button>
 {% if panel %}
   <a href="/admin/facturas/{{ f.id }}/xml" class="btn btn-sm btn-claro">XML UBL</a>
   {% if f.estado == 'borrador' %}
@@ -31,6 +34,14 @@
 <div class="aviso aviso-alerta no-imprimir">
   Factura numerada y con CUFE calculado, pero <strong>no transmitida a la DIAN</strong>:
   faltan los datos de habilitación en <a href="/admin/configuracion">Configuración</a>.
+</div>
+{% endif %}
+
+{% if panel %}
+<div class="aviso aviso-info no-imprimir" style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+  <span>Al descargar, el archivo se guarda como
+    <strong>{{ nombre_archivo('FEV', f.numero, f.cliente.razon_social) }}.pdf</strong>
+    — listo para enviar. Sale en tamaño A5.</span>
 </div>
 {% endif %}
 

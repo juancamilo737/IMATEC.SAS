@@ -1,8 +1,10 @@
 {% extends "base_panel.html" %}
-{% block titulo %}Cotización {{ c.numero }} — IMATEC{% endblock %}
+{% block titulo %}{{ nombre_archivo('COT', c.numero, c.cliente.razon_social) }}{% endblock %}
 {% block encabezado %}Cotización {{ c.numero }}{% endblock %}
 {% block acciones %}
-<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+<button class="btn btn-sm" onclick="window.print()"
+        title="Se abre el diálogo de impresión: elija «Guardar como PDF»">⬇ Descargar PDF</button>
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir</button>
 {% if panel %}
   <a href="/admin/cotizaciones/{{ c.id }}/editar" class="btn btn-sm btn-claro">Editar</a>
   {% if c.estado == 'borrador' %}
