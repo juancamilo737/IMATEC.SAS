@@ -132,6 +132,54 @@ def producto(request: Request, slug: str):
                                               (p["categoria_id"], p["id"]))])
 
 
+# ---------------------------------------------------------------------
+#  Redirecciones de las URLs del WordPress anterior.
+#  Cuando este sistema quede en imatecsas.com, las direcciones que Google
+#  ya tiene indexadas deben seguir llevando a algún sitio útil en vez de
+#  mostrar un error 404.
+# ---------------------------------------------------------------------
+REDIRECCIONES_ANTIGUAS = {
+    "/proyectos": "/catalogo",
+    "/portfolio": "/catalogo",
+    "/blog": "/",
+    "/sample-page": "/",
+    "/work-in-progress": "/",
+    "/coming-soon": "/",
+    "/coming-soon-video": "/",
+    "/discover-all-features": "/servicios",
+    "/front-page-shop": "/catalogo",
+    "/extras": "/",
+    "/alternative-page": "/contacto",
+}
+
+
+@router.get("/proyectos")
+@router.get("/portfolio")
+@router.get("/portfolio/{resto:path}")
+@router.get("/blog")
+@router.get("/sample-page")
+@router.get("/work-in-progress")
+@router.get("/coming-soon")
+@router.get("/coming-soon-video")
+@router.get("/discover-all-features")
+@router.get("/front-page-shop")
+@router.get("/extras")
+@router.get("/extras/{resto:path}")
+@router.get("/alternative-page")
+@router.get("/alternative-page/{resto:path}")
+def redirecciones_wordpress(request: Request, resto: str = ""):
+    """301 permanente: le dice a Google que la página se movió para siempre."""
+    base = "/" + request.url.path.strip("/").split("/")[0]
+    return RedirectResponse(REDIRECCIONES_ANTIGUAS.get(base, "/"), status_code=301)
+
+
+@router.get("/servicios/{resto:path}")
+def servicios_antiguos(request: Request, resto: str):
+    """El tema del WordPress dejó páginas de servicios en inglés que nunca
+    fueron de IMATEC (kitchen-remodeling, hardwood-flooring…)."""
+    return RedirectResponse("/servicios", status_code=301)
+
+
 @router.get("/creditos")
 def creditos(request: Request):
     """Atribución de las fotos de materiales (exigida por sus licencias Creative Commons)."""
