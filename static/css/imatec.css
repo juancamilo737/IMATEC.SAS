@@ -510,3 +510,18 @@ table.tabla-medidas input[type=number]{padding:.4rem .5rem;font-size:.86rem;bord
 .linea-mas{font-family:var(--titulo);font-weight:700;font-size:.7rem;letter-spacing:.1em;
   text-transform:uppercase;color:var(--gris-600);margin-top:.2rem}
 .linea:hover .linea-mas{color:var(--negro)}
+
+/* ---------- cerrar sesión desde el perfil ---------- */
+.salir-caja{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap}
+.salir-caja > div{flex:1;min-width:180px}
+@media (max-width:560px){
+  .salir-caja{flex-direction:column;align-items:stretch}
+  .salir-caja .btn{width:100%}
+}
+
+/* ---------- salir desde el sitio público ---------- */
+.salir-web{padding-left:.9em;padding-right:.9em}
+@media (max-width:760px){
+  /* en el menú desplegable del móvil se muestra completo */
+  .salir-web{justify-content:center}
+}

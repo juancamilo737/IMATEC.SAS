@@ -34,7 +34,10 @@
       <div class="nav-acciones">
         <a href="/carrito" class="carrito-btn">🛒 Solicitud <span class="carrito-num" id="carrito-num">0</span></a>
         {% if usuario %}
-          <a href="{{ '/admin' if usuario.rol in ['admin','vendedor'] else '/portal' }}" class="btn btn-sm btn-oscuro">Mi cuenta</a>
+          <a href="{{ '/admin' if usuario.rol in ['admin','vendedor'] else '/portal' }}"
+             class="btn btn-sm btn-oscuro">Mi cuenta</a>
+          <a href="/salir" class="btn btn-sm btn-claro salir-web"
+             title="Cerrar la sesión de {{ usuario.nombre }}">⏻ <span>Salir</span></a>
         {% else %}
           <a href="/acceso" class="btn btn-sm btn-linea">Ingresar</a>
         {% endif %}
