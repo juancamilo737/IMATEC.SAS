@@ -19,8 +19,9 @@
           <div class="numero" style="color:var(--amarillo)">{{ '%02d'|format(loop.index) }}</div>
           <h2>{{ s.nombre }}</h2>
           <p style="font-size:1.05rem;color:var(--gris-600)">{{ s.descripcion }}</p>
-          <a href="/catalogo?cat={{ s.slug }}" class="btn btn-oscuro" style="margin-top:.6rem">
-            Ver productos</a>
+          <a href="{{ '/catalogo?cat=' ~ s.slug if usuario else '/acceso' }}"
+             class="btn btn-oscuro" style="margin-top:.6rem">
+            {{ 'Ver productos' if usuario else 'Acceder al panel' }}</a>
         </div>
       </div>
       <div style="{{ 'order:1' if loop.index is even }}">

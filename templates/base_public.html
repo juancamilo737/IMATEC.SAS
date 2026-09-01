@@ -28,18 +28,20 @@
     <nav class="nav">
       <a href="/" class="{{ 'activo' if pagina=='inicio' }}">Inicio</a>
       <a href="/servicios" class="{{ 'activo' if pagina=='servicios' }}">Servicios</a>
-      <a href="/catalogo" class="{{ 'activo' if pagina=='catalogo' }}">Catálogo</a>
+      {% if usuario %}<a href="/catalogo" class="{{ 'activo' if pagina=='catalogo' }}">Catálogo</a>{% endif %}
       <a href="/nosotros" class="{{ 'activo' if pagina=='nosotros' }}">Nosotros</a>
       <a href="/contacto" class="{{ 'activo' if pagina=='contacto' }}">Contacto</a>
       <div class="nav-acciones">
+        {% if usuario %}
         <a href="/carrito" class="carrito-btn">🛒 Solicitud <span class="carrito-num" id="carrito-num">0</span></a>
+        {% endif %}
         {% if usuario %}
           <a href="{{ '/admin' if usuario.rol in ['admin','vendedor'] else '/portal' }}"
              class="btn btn-sm btn-oscuro">Mi cuenta</a>
           <a href="/salir" class="btn btn-sm btn-claro salir-web"
              title="Cerrar la sesión de {{ usuario.nombre }}">⏻ <span>Salir</span></a>
         {% else %}
-          <a href="/acceso" class="btn btn-sm btn-linea">Ingresar</a>
+          <a href="/acceso" class="btn btn-sm btn-oscuro">Acceder al panel</a>
         {% endif %}
       </div>
     </nav>
@@ -69,7 +71,7 @@
         <h4>Navegación</h4>
         <a href="/">Inicio</a>
         <a href="/servicios">Servicios</a>
-        <a href="/catalogo">Catálogo</a>
+        <a href="/acceso">Panel de clientes</a>
         <a href="/nosotros">Nosotros</a>
         <a href="/contacto">Contacto</a>
         <a href="/acceso">Portal de clientes</a>

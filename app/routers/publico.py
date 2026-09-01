@@ -71,8 +71,6 @@ def inicio(request: Request):
     return render(request, "public/inicio.html",
                   pagina="inicio",
                   servicios=_servicios(),
-                  destacados=db.q(f"{SQL_PRODUCTO} WHERE p.activo=1 AND p.destacado=1 "
-                                  "ORDER BY c.orden, p.id LIMIT 6"),
                   familias=[dict(f, grupo=conteo_grupo(f["grupo_sku"]))
                             for f in db.q(f"{SQL_PRODUCTO} WHERE p.activo=1 "
                                           "AND p.grupo_sku<>'' ORDER BY p.id LIMIT 4")],
@@ -98,9 +96,19 @@ def nosotros(request: Request):
     return render(request, "public/nosotros.html", pagina="nosotros")
 
 
+def _exige_sesion(request: Request):
+    """El catálogo, los precios y la existencia son información comercial:
+    sólo la ven los clientes registrados y el equipo de IMATEC."""
+    if not current_user(request):
+        return RedirectResponse(f"/acceso?destino={request.url.path}", status_code=303)
+    return None
+
+
 @router.get("/catalogo")
 def catalogo(request: Request, cat: str = "", q: str = ""):
     from ..main import render
+    if (r := _exige_sesion(request)):
+        return r
     sql, params = f"{SQL_PRODUCTO} WHERE p.activo=1", []
     if cat:
         sql += " AND c.slug=?"
@@ -121,6 +129,8 @@ def catalogo(request: Request, cat: str = "", q: str = ""):
 @router.get("/producto/{slug}")
 def producto(request: Request, slug: str):
     from ..main import render
+    if (r := _exige_sesion(request)):
+        return r
     p = db.q1(f"{SQL_PRODUCTO} WHERE p.slug=? AND p.activo=1", (slug,))
     if not p:
         return RedirectResponse("/catalogo", status_code=303)
@@ -208,6 +218,8 @@ def contacto_enviar(request: Request, nombre: str = Form(...), mensaje: str = Fo
 @router.get("/carrito")
 def carrito(request: Request):
     from ..main import render
+    if (r := _exige_sesion(request)):
+        return r
     usuario = current_user(request)
     cliente = db.q1("SELECT * FROM clientes WHERE id=?", (usuario["cliente_id"],)) \
         if usuario and usuario.get("cliente_id") else None

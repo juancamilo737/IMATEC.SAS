@@ -14,8 +14,14 @@
       Una sola empresa responde por el material y por el trabajo.
     </p>
     <div class="hero-acciones">
-      <a href="/catalogo" class="btn btn-lg">Ver catálogo</a>
-      <a href="/contacto" class="btn btn-lg btn-linea" style="border-color:#fff;color:#fff">Solicitar cotización</a>
+      {% if usuario %}
+        <a href="/catalogo" class="btn btn-lg">Ver catálogo</a>
+        <a href="{{ '/admin' if es_staff else '/portal' }}" class="btn btn-lg btn-linea"
+           style="border-color:#fff;color:#fff">Ir a mi panel</a>
+      {% else %}
+        <a href="/acceso" class="btn btn-lg">Acceder al panel</a>
+        <a href="/contacto" class="btn btn-lg btn-linea" style="border-color:#fff;color:#fff">Solicitar acceso</a>
+      {% endif %}
     </div>
     <div class="hero-datos">
       <div><b>30+</b><span>Años de experiencia</span></div>
@@ -40,7 +46,8 @@
         <div class="numero">{{ '%02d'|format(loop.index) }}</div>
         <h3>{{ s.nombre }}</h3>
         <p>{{ s.descripcion }}</p>
-        <a href="/catalogo?cat={{ s.slug }}" class="enlace">Ver productos →</a>
+        <a href="{{ '/catalogo?cat=' ~ s.slug if usuario else '/acceso' }}" class="enlace">
+          {{ 'Ver productos' if usuario else 'Acceder para ver' }} →</a>
       </article>
       {% endfor %}
     </div>
@@ -58,7 +65,7 @@
     </div>
     <div class="rejilla rejilla-4">
       {% for c in lineas %}
-      <a href="/catalogo?cat={{ c.slug }}" class="linea">
+      <a href="{{ '/catalogo?cat=' ~ c.slug if usuario else '/acceso' }}" class="linea">
         <span class="linea-nombre">{{ c.nombre }}</span>
         <span class="linea-desc">{{ c.descripcion }}</span>
         <span class="linea-mas">{{ c.n }} referencia{{ 's' if c.n != 1 }} →</span>
@@ -66,23 +73,26 @@
       {% endfor %}
     </div>
     <div class="centro" style="margin-top:2.4rem">
-      <a href="/catalogo" class="btn btn-oscuro">Ver todo el catálogo</a>
+      <a href="{{ '/catalogo' if usuario else '/acceso' }}" class="btn btn-oscuro">
+        {{ 'Ver todo el catálogo' if usuario else 'Acceder para ver el catálogo' }}</a>
     </div>
   </div>
 </section>
 
 <section class="seccion seccion-gris">
   <div class="contenedor">
-    <div class="titulo-seccion">
-      <div class="kicker">Taller y fabricación</div>
-      <h2>Productos destacados</h2>
-      <p>Fabricación en acero inoxidable AISI 304 y acero estructural. Todo se fabrica a la medida de su espacio y su necesidad.</p>
-    </div>
-    <div class="rejilla rejilla-3">
-      {% for p in destacados %}{% include "public/_tarjeta_producto.html" %}{% endfor %}
-    </div>
-    <div class="centro" style="margin-top:2.8rem">
-      <a href="/catalogo" class="btn btn-lg btn-oscuro">Ver catálogo completo</a>
+    <div class="panel-cta">
+      <h3>El catálogo es exclusivo para nuestros clientes</h3>
+      <p>
+        Precios, existencia real de bodega y solicitud de cotización en línea están
+        disponibles en el panel de clientes. Si ya trabaja con IMATEC, ingrese con
+        el usuario que le entregamos.
+      </p>
+      <div class="hero-acciones" style="justify-content:center">
+        <a href="/acceso" class="btn btn-lg">Acceder al panel</a>
+        <a href="/contacto" class="btn btn-lg btn-linea" style="border-color:#fff;color:#fff">
+          Solicitar mi acceso</a>
+      </div>
     </div>
   </div>
 </section>

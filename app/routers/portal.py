@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import RedirectResponse
 
-from .. import db, documentos as D
+from .. import db, documentos as D, portal_datos
 from ..auth import current_user, hash_password, verify_password
 
 router = APIRouter(prefix="/portal")
@@ -36,19 +36,24 @@ def inicio(request: Request, aviso: str = "", tipo: str = "ok"):
         return r
     return render(request, "portal/inicio.html", seccion="inicio", cliente=cli,
         aviso=aviso, aviso_tipo=tipo,
-        saldo=db.scalar("SELECT COALESCE(SUM(saldo),0) FROM facturas WHERE cliente_id=? "
-                        "AND estado NOT IN ('anulada','borrador')", (cli["id"],)),
-        vencidas=db.scalar("SELECT COUNT(*) FROM facturas WHERE cliente_id=? AND saldo>0 "
-                           "AND fecha_vencimiento<date('now','localtime') "
-                           "AND estado NOT IN ('anulada','borrador','pagada')", (cli["id"],)),
-        n_cot=db.scalar("SELECT COUNT(*) FROM cotizaciones WHERE cliente_id=? "
-                        "AND estado IN ('enviada','borrador')", (cli["id"],)),
-        en_camino=db.scalar("SELECT COUNT(*) FROM remisiones WHERE cliente_id=? "
-                            "AND estado IN ('pendiente','despachada')", (cli["id"],)),
+        cartera=portal_datos.cartera(cli["id"]),
+        act=portal_datos.resumen_actividad(cli["id"]),
         cotizaciones=_mio("cotizaciones", cli["id"], "AND estado<>'borrador'", 5),
         remisiones=_mio("remisiones", cli["id"], "", 5),
-        facturas=_mio("facturas", cli["id"], "AND estado<>'borrador'", 5),
-        solicitudes=_mio("pedidos", cli["id"], "", 5))
+        facturas=_mio("facturas", cli["id"], "AND estado<>'borrador'", 5))
+
+
+@router.get("/estado-cuenta")
+def estado_cuenta(request: Request):
+    """Detalle de cartera: cada factura pendiente con su antigüedad."""
+    from ..main import render
+    u, cli, r = _guard(request)
+    if r:
+        return r
+    return render(request, "portal/estado_cuenta.html", seccion="cartera", cliente=cli,
+                  cartera=portal_datos.cartera(cli["id"]),
+                  pagadas=db.q("""SELECT * FROM facturas WHERE cliente_id=? AND estado='pagada'
+                                  ORDER BY fecha_emision DESC LIMIT 20""", (cli["id"],)))
 
 
 @router.get("/solicitudes")

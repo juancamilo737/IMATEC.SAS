@@ -1,0 +1,89 @@
+{% extends "base_panel.html" %}
+{% block titulo %}Estado de cuenta — IMATEC S.A.S.{% endblock %}
+{% block encabezado %}Estado de cuenta{% endblock %}
+{% block acciones %}
+<button class="btn btn-sm btn-claro" onclick="window.print()">Imprimir / PDF</button>
+<a href="/portal" class="btn btn-sm btn-claro">Volver al panel</a>
+{% endblock %}
+
+{% block contenido %}
+<div class="kpis">
+  <div class="kpi kpi-amarillo"><div class="et">Saldo total</div>
+    <div class="val">{{ cartera.total|cop }}</div></div>
+  <div class="kpi {{ 'kpi-error' if cartera.vencido else 'kpi-ok' }}"><div class="et">Vencido</div>
+    <div class="val">{{ cartera.vencido|cop }}</div></div>
+  <div class="kpi kpi-info"><div class="et">Por vencer</div>
+    <div class="val">{{ cartera.por_vencer|cop }}</div></div>
+  <div class="kpi"><div class="et">Cupo disponible</div>
+    <div class="val">{{ cartera.cupo_disponible|cop }}</div></div>
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Antigüedad de la cartera</h3>
+    <span class="silencio" style="margin-left:auto">Al {{ hoy }}</span></div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Corriente</th><th>1 a 30 días</th><th>31 a 60 días</th>
+      <th>61 a 90 días</th><th>Más de 90</th><th class="num">Total</th></tr></thead>
+    <tbody><tr>
+      <td class="num">{{ cartera.franjas.corriente|cop }}</td>
+      <td class="num {{ 'alerta-suave' if cartera.franjas.d1_30 }}">{{ cartera.franjas.d1_30|cop }}</td>
+      <td class="num {{ 'alerta-suave' if cartera.franjas.d31_60 }}">{{ cartera.franjas.d31_60|cop }}</td>
+      <td class="num {{ 'alerta-fuerte' if cartera.franjas.d61_90 }}">{{ cartera.franjas.d61_90|cop }}</td>
+      <td class="num {{ 'alerta-fuerte' if cartera.franjas.d90 }}">{{ cartera.franjas.d90|cop }}</td>
+      <td class="num"><strong>{{ cartera.total|cop }}</strong></td>
+    </tr></tbody></table></div>
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Facturas pendientes de pago</h3>
+    <span class="tag" style="margin-left:auto">{{ cartera.facturas|length }}</span></div>
+  {% if cartera.facturas %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Factura</th><th>Emisión</th><th>Vencimiento</th><th>Antigüedad</th>
+      <th class="num">Total</th><th class="num">Saldo</th><th></th></tr></thead>
+    <tbody>{% for f in cartera.facturas %}
+      <tr>
+        <td><a href="/portal/facturas/{{ f.id }}" class="enlace-doc"><strong>{{ f.numero }}</strong></a></td>
+        <td class="silencio">{{ f.fecha_emision }}</td>
+        <td>{{ f.fecha_vencimiento }}</td>
+        <td>{% if f.dias_vencido > 0 %}
+              <span class="tag {{ 'tag-error' if f.dias_vencido > 30 else 'tag-alerta' }}">
+                {{ f.dias_vencido }} días vencida</span>
+            {% else %}
+              <span class="tag tag-ok">Vence en {{ -f.dias_vencido }} días</span>
+            {% endif %}</td>
+        <td class="num">{{ f.total|cop }}</td>
+        <td class="num"><strong>{{ f.saldo|cop }}</strong></td>
+        <td class="acc"><a href="/portal/facturas/{{ f.id }}" class="btn btn-sm btn-claro">Ver</a></td>
+      </tr>
+    {% endfor %}</tbody>
+    <tfoot><tr style="background:var(--gris-100);font-weight:700">
+      <td colspan="5">Total pendiente</td>
+      <td class="num"><strong>{{ cartera.total|cop }}</strong></td><td></td>
+    </tr></tfoot></table></div>
+  {% else %}
+  <div class="vacio"><b>No tiene facturas pendientes</b>
+    <p>Su cuenta con IMATEC S.A.S. está completamente al día.</p></div>
+  {% endif %}
+</div>
+
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Facturas pagadas</h3>
+    <span class="silencio" style="margin-left:auto">Últimas 20</span></div>
+  {% if pagadas %}
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Factura</th><th>Emisión</th><th class="num">Total</th><th>Estado</th></tr></thead>
+    <tbody>{% for f in pagadas %}
+      <tr><td><a href="/portal/facturas/{{ f.id }}" class="enlace-doc">{{ f.numero }}</a></td>
+          <td class="silencio">{{ f.fecha_emision }}</td>
+          <td class="num">{{ f.total|cop }}</td>
+          <td><span class="tag tag-ok">Pagada</span></td></tr>
+    {% endfor %}</tbody></table></div>
+  {% else %}<div class="vacio"><b>Aún no hay facturas pagadas</b></div>{% endif %}
+</div>
+
+<p class="silencio">
+  Este estado de cuenta es informativo y refleja los registros de IMATEC S.A.S. al
+  {{ hoy }}. Si encuentra alguna diferencia, comuníquese al {{ empresa.telefono }}.
+</p>
+{% endblock %}

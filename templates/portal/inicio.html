@@ -1,46 +1,121 @@
 {% extends "base_panel.html" %}
-{% block titulo %}Mi portal — IMATEC S.A.S.{% endblock %}
-{% block encabezado %}Hola, {{ cliente.contacto or cliente.razon_social }}{% endblock %}
-{% block acciones %}<a href="/catalogo" class="btn btn-sm">Ir al catálogo</a>{% endblock %}
+{% block titulo %}Mi panel — IMATEC S.A.S.{% endblock %}
+{% block encabezado %}Panel de {{ cliente.razon_social }}{% endblock %}
+{% block acciones %}
+<a href="/catalogo" class="btn btn-sm">Hacer un pedido</a>
+<a href="/portal/estado-cuenta" class="btn btn-sm btn-claro">Estado de cuenta</a>
+{% endblock %}
 
 {% block contenido %}
-<div class="kpis">
-  <div class="kpi {{ 'kpi-error' if vencidas else 'kpi-ok' }}">
-    <div class="et">Saldo pendiente</div>
-    <div class="val">{{ saldo|cop }}</div>
-    <div class="sub">{% if vencidas %}<strong style="color:var(--error)">{{ vencidas }} factura(s) vencida(s)</strong>
-      {% else %}Sin facturas vencidas{% endif %}</div>
+
+{# ---------- franja de estado: lo primero que debe ver ---------- #}
+<div class="estado-cliente {{ 'estado-alerta' if not cartera.al_dia else 'estado-ok' }}">
+  <div class="estado-icono">{{ '!' if not cartera.al_dia else '✓' }}</div>
+  <div class="estado-texto">
+    {% if cartera.al_dia %}
+      <strong>Su cuenta está al día</strong>
+      <span>{% if cartera.total %}Tiene {{ cartera.total|cop }} por vencer, sin saldos vencidos.
+            {% else %}No tiene facturas pendientes de pago.{% endif %}</span>
+    {% else %}
+      <strong>Tiene {{ cartera.n_vencidas }} factura{{ 's' if cartera.n_vencidas != 1 }} vencida{{ 's' if cartera.n_vencidas != 1 }}</strong>
+      <span>{{ cartera.vencido|cop }} en mora. Comuníquese con nosotros para ponerse al día.</span>
+    {% endif %}
   </div>
-  <div class="kpi kpi-amarillo"><div class="et">Cotizaciones por revisar</div>
-    <div class="val">{{ n_cot }}</div>
-    <div class="sub"><a href="/portal/cotizaciones">Ver cotizaciones →</a></div></div>
-  <div class="kpi kpi-info"><div class="et">Pedidos en camino</div>
-    <div class="val">{{ en_camino }}</div>
-    <div class="sub"><a href="/portal/remisiones">Ver remisiones →</a></div></div>
-  <div class="kpi"><div class="et">Plazo de pago</div>
-    <div class="val">{{ cliente.condicion_pago }} <span style="font-size:1rem">días</span></div>
-    <div class="sub">Cupo de crédito {{ cliente.cupo_credito|cop }}</div></div>
+  <a href="/portal/estado-cuenta" class="btn btn-sm {{ 'btn-claro' if cartera.al_dia else 'btn-oscuro' }}">Ver detalle</a>
 </div>
 
+{# ---------- indicadores ---------- #}
+<div class="kpis">
+  <div class="kpi {{ 'kpi-error' if not cartera.al_dia else 'kpi-amarillo' }}">
+    <div class="et">Saldo total</div>
+    <div class="val">{{ cartera.total|cop }}</div>
+    <div class="sub">{{ cartera.por_vencer|cop }} por vencer</div>
+  </div>
+  <div class="kpi {{ 'kpi-error' if cartera.vencido else 'kpi-ok' }}">
+    <div class="et">Vencido</div>
+    <div class="val">{{ cartera.vencido|cop }}</div>
+    <div class="sub">{{ cartera.n_vencidas }} factura(s) en mora</div>
+  </div>
+  <div class="kpi kpi-info">
+    <div class="et">Cupo disponible</div>
+    <div class="val">{{ cartera.cupo_disponible|cop }}</div>
+    <div class="sub">
+      {% if cartera.cupo %}de {{ cartera.cupo|cop }} aprobado
+      {% else %}Sin cupo asignado — pago de contado{% endif %}
+    </div>
+  </div>
+  <div class="kpi">
+    <div class="et">Comprado en {{ anio }}</div>
+    <div class="val">{{ act.comprado_anio|cop }}</div>
+    <div class="sub">{{ act.n_facturas_anio }} factura(s) · plazo {{ cartera.plazo }} días</div>
+  </div>
+</div>
+
+{# ---------- uso del cupo ---------- #}
+{% if cartera.cupo %}
+<div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Uso de su cupo de crédito</h3>
+    <span class="silencio" style="margin-left:auto">{{ cartera.cupo_usado_pct }}% utilizado</span></div>
+  <div class="tarjeta-cuerpo">
+    <div class="barra-cupo">
+      <div class="barra-cupo-relleno {{ 'lleno' if cartera.cupo_usado_pct > 85 }}"
+           style="width:{{ cartera.cupo_usado_pct }}%"></div>
+    </div>
+    <div class="barra-cupo-pie">
+      <span>Usado <strong>{{ cartera.total|cop }}</strong></span>
+      <span>Disponible <strong>{{ cartera.cupo_disponible|cop }}</strong></span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ---------- lo que requiere acción del cliente ---------- #}
+{% if act.por_aprobar %}
+<div class="tarjeta" style="border-left:4px solid var(--amarillo)">
+  <div class="tarjeta-cab">
+    <h3>Requieren su aprobación</h3>
+    <span class="tag tag-amarillo" style="margin-left:auto">{{ act.por_aprobar|length }}</span>
+  </div>
+  <div class="tabla-envoltura"><table class="datos">
+    <thead><tr><th>Cotización</th><th>Fecha</th><th>Válida hasta</th>
+      <th class="num">Total</th><th></th></tr></thead>
+    <tbody>{% for c in act.por_aprobar %}
+      <tr>
+        <td><a href="/portal/cotizaciones/{{ c.id }}" class="enlace-doc"><strong>{{ c.numero }}</strong></a></td>
+        <td class="silencio">{{ c.fecha }}</td>
+        <td>{% if c.vence < hoy %}<span class="tag tag-error">Vencida</span>
+            {% else %}{{ c.vence }}{% endif %}</td>
+        <td class="num"><strong>{{ c.total|cop }}</strong></td>
+        <td class="acc"><a href="/portal/cotizaciones/{{ c.id }}" class="btn btn-sm">Revisar</a></td>
+      </tr>
+    {% endfor %}</tbody></table></div>
+</div>
+{% endif %}
+
 <div class="rejilla rejilla-2" style="align-items:start">
+
+  {# ---------- pedidos en curso ---------- #}
   <div class="tarjeta">
-    <div class="tarjeta-cab"><h3>Mis cotizaciones</h3>
-      <div class="acciones"><a href="/portal/cotizaciones" class="btn btn-sm btn-claro">Ver todas</a></div></div>
-    {% if cotizaciones %}
+    <div class="tarjeta-cab"><h3>Pedidos en curso</h3>
+      <div class="acciones"><a href="/portal/remisiones" class="btn btn-sm btn-claro">Ver todos</a></div></div>
+    {% if act.en_camino %}
     <div class="tabla-envoltura"><table class="datos">
-      <thead><tr><th>Número</th><th>Fecha</th><th class="num">Total</th><th>Estado</th></tr></thead>
-      <tbody>{% for c in cotizaciones %}
-        <tr><td><a href="/portal/cotizaciones/{{ c.id }}" class="enlace-doc">{{ c.numero }}</a></td>
-            <td class="silencio">{{ c.fecha }}</td><td class="num">{{ c.total|cop }}</td>
-            <td><span class="tag {{ c.estado|tag }}">{{ c.estado|bonito }}</span></td></tr>
+      <thead><tr><th>Remisión</th><th>Fecha</th><th>Estado</th><th>Transportador</th></tr></thead>
+      <tbody>{% for r in act.en_camino %}
+        <tr><td><a href="/portal/remisiones/{{ r.id }}" class="enlace-doc">{{ r.numero }}</a></td>
+            <td class="silencio">{{ r.fecha }}</td>
+            <td><span class="tag {{ r.estado|tag }}">{{ r.estado|bonito }}</span></td>
+            <td class="silencio">{{ r.transportador or '—' }}</td></tr>
       {% endfor %}</tbody></table></div>
-    {% else %}<div class="vacio"><b>Aún no tiene cotizaciones</b>
-      <p>Arme una solicitud desde el catálogo y se la cotizamos.</p>
-      <a href="/catalogo" class="btn btn-sm" style="margin-top:.8rem">Ir al catálogo</a></div>{% endif %}
+    {% else %}
+    <div class="vacio"><b>Nada en tránsito</b>
+      <p>Cuando despachemos un pedido suyo, podrá seguirlo desde aquí.</p></div>
+    {% endif %}
   </div>
 
+  {# ---------- últimas facturas ---------- #}
   <div class="tarjeta">
-    <div class="tarjeta-cab"><h3>Mis facturas</h3>
+    <div class="tarjeta-cab"><h3>Últimas facturas</h3>
       <div class="acciones"><a href="/portal/facturas" class="btn btn-sm btn-claro">Ver todas</a></div></div>
     {% if facturas %}
     <div class="tabla-envoltura"><table class="datos">
@@ -56,34 +131,24 @@
       {% endfor %}</tbody></table></div>
     {% else %}<div class="vacio"><b>Sin facturas</b></div>{% endif %}
   </div>
+</div>
 
-  <div class="tarjeta">
-    <div class="tarjeta-cab"><h3>Mis despachos</h3>
-      <div class="acciones"><a href="/portal/remisiones" class="btn btn-sm btn-claro">Ver todas</a></div></div>
-    {% if remisiones %}
-    <div class="tabla-envoltura"><table class="datos">
-      <thead><tr><th>Remisión</th><th>Fecha</th><th>Estado</th><th>Recibió</th></tr></thead>
-      <tbody>{% for r in remisiones %}
-        <tr><td><a href="/portal/remisiones/{{ r.id }}" class="enlace-doc">{{ r.numero }}</a></td>
-            <td class="silencio">{{ r.fecha }}</td>
-            <td><span class="tag {{ r.estado|tag }}">{{ r.estado|bonito }}</span></td>
-            <td class="silencio">{{ r.recibido_por or '—' }}</td></tr>
-      {% endfor %}</tbody></table></div>
-    {% else %}<div class="vacio"><b>Sin despachos</b></div>{% endif %}
-  </div>
-
-  <div class="tarjeta">
-    <div class="tarjeta-cab"><h3>Mis solicitudes</h3>
-      <div class="acciones"><a href="/portal/solicitudes" class="btn btn-sm btn-claro">Ver todas</a></div></div>
-    {% if solicitudes %}
-    <div class="tabla-envoltura"><table class="datos">
-      <thead><tr><th>Número</th><th>Fecha</th><th>Estado</th></tr></thead>
-      <tbody>{% for p in solicitudes %}
-        <tr><td><strong>{{ p.numero }}</strong></td><td class="silencio">{{ p.fecha[:10] }}</td>
-            <td><span class="tag {{ p.estado|tag }}">{{ p.estado|bonito }}</span></td></tr>
-      {% endfor %}</tbody></table></div>
-    {% else %}<div class="vacio"><b>Sin solicitudes</b>
-      <p>Agregue productos del catálogo a su solicitud y envíela.</p></div>{% endif %}
-  </div>
+{# ---------- accesos ---------- #}
+<div class="rejilla rejilla-3">
+  <a href="/catalogo" class="acceso-rapido">
+    <span class="ar-icono">▣</span>
+    <span class="ar-titulo">Catálogo</span>
+    <span class="ar-texto">Tubería, accesorios, válvulas y fabricación, con existencia real de bodega.</span>
+  </a>
+  <a href="/portal/cotizaciones" class="acceso-rapido">
+    <span class="ar-icono">◫</span>
+    <span class="ar-titulo">Mis cotizaciones</span>
+    <span class="ar-texto">Revise, apruebe o consulte lo que le hemos cotizado.</span>
+  </a>
+  <a href="/portal/estado-cuenta" class="acceso-rapido">
+    <span class="ar-icono">$</span>
+    <span class="ar-titulo">Estado de cuenta</span>
+    <span class="ar-texto">Detalle de su cartera, vencimientos y facturas pagadas.</span>
+  </a>
 </div>
 {% endblock %}
