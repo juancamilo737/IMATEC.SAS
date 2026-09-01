@@ -62,6 +62,43 @@
 </div>
 
 <div class="tarjeta">
+  <div class="tarjeta-cab"><h3>Cargar los archivos de la empresa</h3></div>
+  <div class="tarjeta-cuerpo">
+    <p class="silencio">Suba aquí los archivos que ya maneja IMATEC. Cada importación
+      actualiza lo que exista y agrega lo nuevo: nunca borra.</p>
+    <div class="rejilla rejilla-3" style="align-items:start;margin-top:1.2rem">
+
+      <form method="post" action="/admin/importar/clientes" enctype="multipart/form-data"
+            style="border:var(--borde);border-radius:6px;padding:1.1rem">
+        <h4>Clientes</h4>
+        <p class="silencio">Exportación de Xubio, archivo
+          <em>Importacion de NXVOrganizacion.xlsx</em>. Cruza por NIT.</p>
+        <div class="campo"><input type="file" name="archivo" accept=".xlsx" required></div>
+        <button class="btn btn-sm" style="width:100%">Importar clientes</button>
+      </form>
+
+      <form method="post" action="/admin/importar/precios" enctype="multipart/form-data"
+            style="border:var(--borde);border-radius:6px;padding:1.1rem">
+        <h4>Listado de precios</h4>
+        <p class="silencio"><em>LISTADO DE PRECIOS - FERRETERIA INDUSTRIAL.xlsx</em>.
+          Entran sin publicar hasta que usted los revise.</p>
+        <div class="campo"><input type="file" name="archivo" accept=".xlsx" required></div>
+        <button class="btn btn-sm" style="width:100%">Importar precios</button>
+      </form>
+
+      <form method="post" action="/admin/importar/cartera" enctype="multipart/form-data"
+            style="border:var(--borde);border-radius:6px;padding:1.1rem">
+        <h4>Cartera</h4>
+        <p class="silencio"><em>RELACION DE CARTERA IMATEC S.A.S..xlsx</em>.
+          Crea las facturas pendientes con su vencimiento.</p>
+        <div class="campo"><input type="file" name="archivo" accept=".xlsx" required></div>
+        <button class="btn btn-sm" style="width:100%">Importar cartera</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="tarjeta">
   <div class="tarjeta-cab"><h3>Copia de la base de datos</h3></div>
   <div class="tarjeta-cuerpo">
     <p>Toda la información vive en un solo archivo: <code>data/imatec.db</code> ({{ bd_kb }} KB).

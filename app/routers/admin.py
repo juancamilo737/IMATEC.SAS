@@ -256,6 +256,47 @@ def inventario_importar(request: Request, archivo: UploadFile = File(...)):
                    f"<strong>{res['actualizados']}</strong> actualizados.")
 
 
+@router.post("/importar/{tipo}")
+def importar_archivo(request: Request, tipo: str, archivo: UploadFile = File(...)):
+    """Carga en producción los archivos que la empresa ya tiene:
+    clientes exportados de Xubio, listado de precios y relación de cartera."""
+    u, r = _guard(request)
+    if r:
+        return r
+    destino = UPLOAD_DIR / f"{tipo}_{datetime.now():%Y%m%d_%H%M%S}_{archivo.filename}"
+    with destino.open("wb") as f:
+        shutil.copyfileobj(archivo.file, f)
+
+    try:
+        if tipo == "clientes":
+            from ..importar_xubio import importar_clientes
+            res = importar_clientes(destino, u["email"])
+            aviso = (f"Clientes: <strong>{res['nuevos']}</strong> nuevos, "
+                     f"<strong>{res['actualizados']}</strong> actualizados.")
+        elif tipo == "precios":
+            from ..importar_precios import importar_precios
+            res = importar_precios(destino, u["email"])
+            aviso = (f"Listado de precios: <strong>{res['nuevos']}</strong> productos nuevos y "
+                     f"<strong>{res['actualizados']}</strong> actualizados. "
+                     f"Quedan <strong>sin publicar</strong> hasta que confirme que esos "
+                     f"valores son de venta (revíselos en Inventario).")
+        elif tipo == "cartera":
+            from ..importar_cartera import importar_cartera
+            res = importar_cartera(destino, u["email"])
+            nuevos = res.get("clientes_creados", 0)
+            aviso = (f"Cartera: <strong>{res['creadas']}</strong> facturas por "
+                     f"<strong>{res['total']:,.0f}</strong>."
+                     + (f" Se crearon {nuevos} cliente(s) que no estaban en Xubio; "
+                        "complete sus datos." if nuevos else ""))
+        else:
+            return _volver("/admin/excel", "Tipo de archivo no reconocido.", "error")
+    except Exception as e:
+        return _volver("/admin/excel", f"No se pudo importar: {e}", "error")
+
+    excel_sync.exportar_control()
+    return _volver("/admin/excel", aviso)
+
+
 @router.get("/kardex")
 def kardex(request: Request, material_id: str = ""):
     from ..main import render
