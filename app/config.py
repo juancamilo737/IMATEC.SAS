@@ -78,7 +78,7 @@ EMPRESA_DEFAULT = {
     "razon_social": "IMATEC S.A.S.",
     "nit": "",
     "dv": "",
-    "direccion": "Calle 33B # 17C-68",
+    "direccion": "Calle 33A # 17F-56",
     "ciudad": "Cali",
     "departamento": "Valle del Cauca",
     "pais": "Colombia",

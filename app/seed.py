@@ -296,10 +296,22 @@ def sembrar_catalogo() -> None:
                f"productos/{imagen}", destacado))
 
 
+# Datos que se guardaron mal alguna vez y hay que corregir en bases ya creadas.
+# Sólo se reemplazan si siguen teniendo exactamente el valor viejo: si alguien
+# ya los corrigió a mano, no se tocan.
+CORRECCIONES = {
+    "empresa.direccion": ("Calle 33B # 17C-68", "Calle 33A # 17F-56"),
+}
+
+
 def sembrar_config() -> None:
     for k, v in EMPRESA_DEFAULT.items():
         if not db.q1("SELECT 1 FROM config WHERE clave=?", (f"empresa.{k}",)):
             db.set_config(f"empresa.{k}", v)
+    for clave, (viejo, nuevo) in CORRECCIONES.items():
+        if db.get_config(clave) == viejo:
+            db.set_config(clave, nuevo)
+            print(f"  corregido {clave}: {viejo!r} -> {nuevo!r}", flush=True)
 
 
 def sembrar_usuarios() -> None:
