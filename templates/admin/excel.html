@@ -66,7 +66,7 @@
   <div class="tarjeta-cuerpo">
     <p class="silencio">Suba aquí los archivos que ya maneja IMATEC. Cada importación
       actualiza lo que exista y agrega lo nuevo: nunca borra.</p>
-    <div class="rejilla rejilla-3" style="align-items:start;margin-top:1.2rem">
+    <div class="rejilla rejilla-2" style="align-items:start;margin-top:1.2rem">
 
       <form method="post" action="/admin/importar/clientes" enctype="multipart/form-data"
             style="border:var(--borde);border-radius:6px;padding:1.1rem">
@@ -84,6 +84,16 @@
           Entran sin publicar hasta que usted los revise.</p>
         <div class="campo"><input type="file" name="archivo" accept=".xlsx" required></div>
         <button class="btn btn-sm" style="width:100%">Importar precios</button>
+      </form>
+
+      <form method="post" action="/admin/importar/items" enctype="multipart/form-data"
+            style="border:var(--borde);border-radius:6px;padding:1.1rem">
+        <h4>Histórico de cotizaciones</h4>
+        <p class="silencio">Archivo <em>items_consolidados.json</em>, generado con
+          <code>herramientas/extraer_items.py</code> sobre la carpeta de cotizaciones.
+          Trae los precios realmente cotizados.</p>
+        <div class="campo"><input type="file" name="archivo" accept=".json" required></div>
+        <button class="btn btn-sm" style="width:100%">Importar productos</button>
       </form>
 
       <form method="post" action="/admin/importar/cartera" enctype="multipart/form-data"

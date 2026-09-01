@@ -280,6 +280,13 @@ def importar_archivo(request: Request, tipo: str, archivo: UploadFile = File(...
                      f"<strong>{res['actualizados']}</strong> actualizados. "
                      f"Quedan <strong>sin publicar</strong> hasta que confirme que esos "
                      f"valores son de venta (revíselos en Inventario).")
+        elif tipo == "items":
+            from ..importar_items import importar_items
+            res = importar_items(destino, u["email"])
+            aviso = (f"Histórico de cotizaciones: <strong>{res['nuevos']}</strong> productos "
+                     f"nuevos y <strong>{res['actualizados']}</strong> actualizados. "
+                     f"<strong>{res['publicados']}</strong> quedaron publicados (los cotizados "
+                     f"dos veces o más). Precios tomados de lo realmente cotizado.")
         elif tipo == "cartera":
             from ..importar_cartera import importar_cartera
             res = importar_cartera(destino, u["email"])

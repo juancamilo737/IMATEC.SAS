@@ -49,8 +49,9 @@
     <table class="datos">
       <thead><tr>
         <th>ID Artículo</th><th>Categoría</th><th>Material</th><th>Diámetro</th>
-        <th>Descripción</th><th class="num">Cantidad</th><th>Unidad</th><th>Estado</th>
-        <th>Notas</th><th></th>
+        <th>Descripción</th><th class="num">Cantidad</th><th>Unidad</th>
+        <th class="num">Costo</th><th class="num">Venta</th><th class="num">Margen</th>
+        <th>Estado</th><th>Notas</th><th></th>
       </tr></thead>
       <tbody>
       {% for m in materiales %}
@@ -62,6 +63,15 @@
           <td>{{ m.descripcion }}</td>
           <td class="num"><strong>{{ m.cantidad|num }}</strong></td>
           <td class="silencio">{{ m.unidad }}</td>
+          <td class="num silencio">{% if m.costo_unitario %}{{ m.costo_unitario|cop }}{% endif %}</td>
+          <td class="num">{% if m.precio_venta %}<strong>{{ m.precio_venta|cop }}</strong>{% endif %}</td>
+          <td class="num">
+            {% if m.costo_unitario and m.precio_venta %}
+              {% set r = m.precio_venta / m.costo_unitario %}
+              <span class="tag {{ 'tag-error' if r < 1 else ('tag-alerta' if r > 3 else 'tag-ok') }}">
+                {{ '%.2f'|format(r) }}x</span>
+            {% endif %}
+          </td>
           <td><span class="tag {{ 'tag-ok' if m.cantidad>0 else 'tag-error' }}">{{ m.estado }}</span>
             {% if m.cantidad>0 and m.stock_minimo and m.cantidad<=m.stock_minimo %}
             <span class="tag tag-alerta">Bajo mín.</span>{% endif %}</td>
@@ -148,6 +158,7 @@
           <div class="campo">
             <label>Costo unitario</label>
             <input type="number" name="costo_unitario" id="f-costo" step="1" value="0">
+            <div class="ayuda">Lo que cuesta comprarlo. Sirve para ver el margen.</div>
           </div>
           <div class="campo">
             <label>Proveedor</label>
@@ -167,9 +178,10 @@
              border-left:3px solid var(--amarillo)">
           <div class="fila-2">
             <div class="campo" style="margin:0">
-              <label>Precio de venta ({{ 'por unidad' }})</label>
+              <label>Precio de venta</label>
               <input type="number" name="precio_venta" id="f-precio" value="0" step="100">
-              <div class="ayuda">Déjelo en 0 y en la web sale «Precio a cotizar».</div>
+              <div class="ayuda">Es el precio de referencia. En cada cotización se puede
+                cambiar sin tocar este valor. En 0 sale «Precio a cotizar».</div>
             </div>
             <div class="campo" style="margin:0;display:flex;flex-direction:column;
                  justify-content:center">
