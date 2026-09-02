@@ -36,25 +36,65 @@
     {% include "docs/_cliente.html" %}
   {% endwith %}
 
+  {% set con_valores = r['items'] | selectattr('precio') | list | length > 0 %}
   <table class="doc-items">
     <thead><tr><th style="width:26px">#</th><th>Descripción</th>
-      <th class="num">Cantidad</th><th class="num">Unidad</th><th>Observación</th></tr></thead>
+      <th class="num">Cantidad</th><th class="num">Unidad</th>
+      {% if con_valores %}<th class="num">Vr. unitario</th><th class="num">Valor</th>
+      {% else %}<th>Observación</th>{% endif %}</tr></thead>
     <tbody>
     {% for i in r['items'] %}
-      <tr><td>{{ loop.index }}</td><td><strong>{{ i.descripcion }}</strong></td>
+      {% set base = i.cantidad * i.precio * (1 - (i.descuento_pct or 0) / 100) %}
+      <tr><td>{{ loop.index }}</td>
+          <td><strong>{{ i.descripcion }}</strong>
+            {% if con_valores and i.observacion %}<span class="esp">{{ i.observacion }}</span>{% endif %}</td>
           <td class="num">{{ i.cantidad|num }}</td><td class="num">{{ i.unidad }}</td>
-          <td>{{ i.observacion or '' }}</td></tr>
+          {% if con_valores %}
+            <td class="num">{{ i.precio|cop }}</td>
+            <td class="num"><strong>{{ base|cop }}</strong></td>
+          {% else %}<td>{{ i.observacion or '' }}</td>{% endif %}
+      </tr>
     {% endfor %}
     </tbody>
   </table>
 
-  <div class="doc-notas" style="margin-bottom:10px">
-    {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
-    <h5>Importante</h5>
-    <p>Este documento acredita la entrega de los bienes descritos. <strong>No es una factura
-    de venta</strong> y no presta mérito ejecutivo. Quien recibe declara haber revisado
-    cantidades y estado de la mercancía al momento de la entrega.</p>
-  </div>
+  {% if con_valores %}
+    {% set sub = r['items'] | sum(attribute='precio', start=0) and
+                 (r['items'] | map(attribute='precio') | list) %}
+    {% set subtotal = namespace(v=0) %}
+    {% for i in r['items'] %}
+      {% set subtotal.v = subtotal.v + i.cantidad * i.precio * (1 - (i.descuento_pct or 0) / 100) %}
+    {% endfor %}
+    {% set iva = namespace(v=0) %}
+    {% for i in r['items'] %}
+      {% set iva.v = iva.v + i.cantidad * i.precio * (1 - (i.descuento_pct or 0) / 100)
+                             * (i.iva_pct or 0) / 100 %}
+    {% endfor %}
+    <div class="doc-totales">
+      <div class="doc-notas">
+        {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
+        <h5>Importante</h5>
+        <p>Este documento acredita la entrega de los bienes descritos.
+        <strong>No es una factura de venta</strong> y no presta mérito ejecutivo. Quien
+        recibe declara haber revisado cantidades y estado de la mercancía al momento de
+        la entrega.</p>
+      </div>
+      <div class="doc-sumas">
+        <div><span>Subtotal</span><span>{{ subtotal.v|cop }}</span></div>
+        <div><span>IVA</span><span>{{ iva.v|cop }}</span></div>
+        <div class="total"><span>TOTAL</span><span>{{ (subtotal.v + iva.v)|cop }}</span></div>
+      </div>
+    </div>
+    <div class="doc-letras"><strong>Son:</strong> {{ (subtotal.v + iva.v)|letras }}</div>
+  {% else %}
+    <div class="doc-notas" style="margin-bottom:10px">
+      {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
+      <h5>Importante</h5>
+      <p>Este documento acredita la entrega de los bienes descritos. <strong>No es una
+      factura de venta</strong> y no presta mérito ejecutivo. Quien recibe declara haber
+      revisado cantidades y estado de la mercancía al momento de la entrega.</p>
+    </div>
+  {% endif %}
 
   <div class="doc-firmas">
     <div class="doc-firma">{{ r.elaborado_por or empresa.razon_social }}<br>
