@@ -81,7 +81,12 @@ Cada paso genera el siguiente con un botón, arrastrando precios y descuentos.
 
 ### Impresión y PDF
 
-- Los documentos salen en **A5**, que es el papel que usa el papá.
+- **Todo se imprime en A5**, que es el papel que usa el papá: documentos de
+  venta, estado de cuenta y listados del panel. Cada pantalla se reescala
+  para que quepa completa, sin barra lateral, filtros ni botones.
+- En el listado de inventario se ocultan al imprimir las columnas
+  secundarias (categoría, material, diámetro, costo, margen y notas): con las
+  13 columnas el papel quedaba ilegible. En pantalla se siguen viendo todas.
 - El PDF se guarda con la nomenclatura de la empresa, automáticamente:
   `FEV-688 PARQUES ACUATICOS S.A.S.`, `COT 1 GAS PIPE SOLUTIONS SAS`.
 - Botón **⬇ Descargar PDF** en cotización, remisión y factura.

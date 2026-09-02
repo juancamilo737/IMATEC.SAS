@@ -437,10 +437,65 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
 .doc-acciones{max-width:820px;margin:1.4rem auto 0;display:flex;gap:.7rem;flex-wrap:wrap}
 
 @media print{
-  /* El papá imprime en A5. Se reduce el cuerpo y los espacios para que el
-     documento quepa completo sin que el navegador tenga que encogerlo. */
+  /* En IMATEC TODO se imprime en A5. Se reducen cuerpos y espacios para que
+     cualquier pantalla —documentos, estado de cuenta o listados— quepa
+     completa, sin que el navegador tenga que encogerla ni cortar columnas. */
   @page{size:A5;margin:8mm}
-  body{background:#fff}
+  body{background:#fff;font-size:8.5px}
+
+  /* fuera todo lo que no es contenido */
+  .lateral,.barra-panel,.cabecera,.barra-superior,.pie,.no-imprimir,
+  .herramientas,.tarjeta-cab .acciones,.filtros,.modal-fondo,
+  .carrito-btn,.menu-btn,.nav,.acceso-rapido{display:none !important}
+  .panel{display:block}
+  .contenido,.contenedor,.contenedor-ancho{padding:0;margin:0;max-width:100%}
+
+  /* títulos y tarjetas, en escala A5 */
+  h1{font-size:14px;margin-bottom:.4em}
+  h2{font-size:12px} h3{font-size:10.5px} h4{font-size:9.5px}
+  .tarjeta{border:1px solid #D2D6D9;box-shadow:none;margin-bottom:8px;
+    break-inside:avoid;page-break-inside:avoid}
+  .tarjeta-cab{padding:6px 8px}
+  .tarjeta-cuerpo{padding:8px}
+  .silencio{font-size:7.4px}
+  .tag{font-size:6.4px;padding:.25em .5em}
+
+  /* las tablas son lo que más se corta en A5 */
+  .tabla-envoltura{overflow:visible !important}
+  table.datos,table.tabla-medidas{font-size:7.4px;width:100%;table-layout:fixed}
+  table.datos th,table.tabla-medidas th{font-size:6.4px;padding:3px 4px;
+    background:var(--grafito) !important;color:var(--amarillo) !important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table.datos td,table.tabla-medidas td{padding:3px 4px;word-wrap:break-word}
+  table.datos tr,table.tabla-medidas tr{break-inside:avoid;page-break-inside:avoid}
+  table.datos thead{display:table-header-group}   /* repite cabecera por página */
+  table.datos .acc,table.tabla-medidas td.acc{display:none}  /* botones fuera */
+
+  /* El inventario tiene 13 columnas: en A5 caben, pero quedan ilegibles.
+     Al imprimir se dejan sólo las que sirven en papel —qué es, cuánto hay y
+     a cuánto se vende— y se ocultan categoría, material, diámetro, costo,
+     margen y notas, que se consultan en pantalla. */
+  table.tabla-inventario th:nth-child(2), table.tabla-inventario td:nth-child(2),
+  table.tabla-inventario th:nth-child(3), table.tabla-inventario td:nth-child(3),
+  table.tabla-inventario th:nth-child(4), table.tabla-inventario td:nth-child(4),
+  table.tabla-inventario th:nth-child(8), table.tabla-inventario td:nth-child(8),
+  table.tabla-inventario th:nth-child(10),table.tabla-inventario td:nth-child(10),
+  table.tabla-inventario th:nth-child(12),table.tabla-inventario td:nth-child(12){
+    display:none}
+  table.tabla-inventario{font-size:7.8px}
+  table.tabla-inventario th:nth-child(5),table.tabla-inventario td:nth-child(5){width:42%}
+
+  /* indicadores del panel y del portal */
+  .kpis{gap:5px;margin-bottom:8px}
+  .kpi{padding:6px 8px;break-inside:avoid}
+  .kpi .et{font-size:6.2px;margin-bottom:2px}
+  .kpi .val{font-size:12px}
+  .kpi .sub{font-size:6.6px;margin-top:2px}
+  .rejilla{gap:6px}
+
+  /* enlaces: en papel el subrayado sólo estorba */
+  a{text-decoration:none !important;color:inherit !important;
+    border-bottom:0 !important}
   .doc{box-shadow:none;margin:0;padding:0;max-width:100%;font-size:8.5px}
   .doc-cab{gap:12px;padding-bottom:9px;margin-bottom:11px}
   .doc-cab img{height:46px}
@@ -602,5 +657,7 @@ td.alerta-fuerte{background:var(--error-bg);color:var(--error);font-weight:700}
 .panel-cta h3{color:#fff;font-size:1.5rem;margin-bottom:.6rem}
 .panel-cta p{color:#D6D8DA;max-width:520px;margin:0 auto 1.6rem}
 @media print{
-  .estado-cliente,.acceso-rapido,.barra-cupo{break-inside:avoid}
+  .estado-cliente,.barra-cupo{break-inside:avoid;page-break-inside:avoid}
+  .estado-cliente{padding:8px}
+  .franjas-cartera{font-size:7.4px}
 }
