@@ -437,11 +437,15 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
 .doc-acciones{max-width:820px;margin:1.4rem auto 0;display:flex;gap:.7rem;flex-wrap:wrap}
 
 @media print{
-  /* En IMATEC TODO se imprime en A5. Se reducen cuerpos y espacios para que
-     cualquier pantalla —documentos, estado de cuenta o listados— quepa
-     completa, sin que el navegador tenga que encogerla ni cortar columnas. */
-  @page{size:A5;margin:8mm}
-  body{background:#fff;font-size:8.5px}
+  /* En IMATEC TODO se imprime en A5. El papel manda: 1px de CSS son 0,26 mm,
+     así que lo que había antes —8,5px de cuerpo y 6,6px en las tablas— salía
+     impreso en 6 y 5 puntos, y no se leía. Los renglones de los documentos van
+     ahora en 12px (9 pt, el tamaño de una factura normal) y nada en toda la
+     hoja baja de 9,8px (~7,4 pt), ni el pie. Si un documento no cabe, que pase
+     a la segunda hoja: se prefiere antes que obligar a buscar la lupa. El
+     margen bajó a 7mm para ganar ancho útil. */
+  @page{size:A5;margin:7mm}
+  body{background:#fff;font-size:11px}
 
   /* fuera todo lo que no es contenido */
   .lateral,.barra-panel,.cabecera,.barra-superior,.pie,.no-imprimir,
@@ -451,77 +455,110 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
   .contenido,.contenedor,.contenedor-ancho{padding:0;margin:0;max-width:100%}
 
   /* títulos y tarjetas, en escala A5 */
-  h1{font-size:14px;margin-bottom:.4em}
-  h2{font-size:12px} h3{font-size:10.5px} h4{font-size:9.5px}
+  h1{font-size:17px;margin-bottom:.4em}
+  h2{font-size:14.5px} h3{font-size:13px} h4{font-size:12px}
   .tarjeta{border:1px solid #D2D6D9;box-shadow:none;margin-bottom:8px;
     break-inside:avoid;page-break-inside:avoid}
   .tarjeta-cab{padding:6px 8px}
   .tarjeta-cuerpo{padding:8px}
-  .silencio{font-size:7.4px}
-  .tag{font-size:6.4px;padding:.25em .5em}
+  .silencio{font-size:10.6px}
+  .tag{font-size:9.4px;padding:.25em .5em}
 
   /* las tablas son lo que más se corta en A5 */
   .tabla-envoltura{overflow:visible !important}
-  table.datos,table.tabla-medidas{font-size:7.4px;width:100%;table-layout:fixed}
-  table.datos th,table.tabla-medidas th{font-size:6.4px;padding:3px 4px;
+  /* Con table-layout:fixed y sin anchos, las columnas se repartían en partes
+     iguales: la fecha y el estado sobraban de ancho mientras «FERRETERIA SU
+     PROVEEDOR SAS» se partía en seis líneas. En auto cada columna pide lo
+     suyo; los números y las fechas se declaran nowrap para que nunca se
+     partan y el nombre del cliente se quede con el ancho sobrante. */
+  table.datos,table.tabla-medidas{font-size:11px;width:100%;table-layout:auto}
+  table.datos td.num,table.datos td.mono,table.datos td .tag{white-space:nowrap}
+  table.datos td.num,table.datos td.mono{width:1%}
+  /* La columna de acciones lleva la clase .acc en la celda pero no en su
+     cabecera, así que se ocultaba el contenido y quedaba una franja vacía. */
+  table.datos th:last-child:empty{display:none}
+  table.datos th,table.tabla-medidas th{font-size:10px;padding:4px 4px;
     background:var(--grafito) !important;color:var(--amarillo) !important;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
-  table.datos td,table.tabla-medidas td{padding:3px 4px;word-wrap:break-word}
+  table.datos td,table.tabla-medidas td{padding:4px 4px;word-wrap:break-word}
   table.datos tr,table.tabla-medidas tr{break-inside:avoid;page-break-inside:avoid}
   table.datos thead{display:table-header-group}   /* repite cabecera por página */
   table.datos .acc,table.tabla-medidas td.acc{display:none}  /* botones fuera */
 
   /* El inventario tiene 13 columnas: en A5 caben, pero quedan ilegibles.
-     Al imprimir se dejan sólo las que sirven en papel —qué es, cuánto hay y
-     a cuánto se vende— y se ocultan categoría, material, diámetro, costo,
-     margen y notas, que se consultan en pantalla. */
+     Al imprimir se dejan sólo las cinco que sirven en papel —qué es, cuánto
+     hay y a cuánto se vende— y se ocultan categoría, material, diámetro,
+     costo, margen, notas y acciones, que se consultan en pantalla. «Estado»
+     también sale: en papel la cantidad ya lo dice, y la columna se llevaba
+     un 12% del ancho partiendo «NO DISPONIBLE» en dos líneas. */
   table.tabla-inventario th:nth-child(2), table.tabla-inventario td:nth-child(2),
   table.tabla-inventario th:nth-child(3), table.tabla-inventario td:nth-child(3),
   table.tabla-inventario th:nth-child(4), table.tabla-inventario td:nth-child(4),
   table.tabla-inventario th:nth-child(8), table.tabla-inventario td:nth-child(8),
   table.tabla-inventario th:nth-child(10),table.tabla-inventario td:nth-child(10),
+  table.tabla-inventario th:nth-child(11),table.tabla-inventario td:nth-child(11),
   table.tabla-inventario th:nth-child(12),table.tabla-inventario td:nth-child(12){
     display:none}
-  table.tabla-inventario{font-size:7.8px}
-  table.tabla-inventario th:nth-child(5),table.tabla-inventario td:nth-child(5){width:42%}
+  /* La cabecera de acciones no lleva clase .acc, así que se ocultaba la celda
+     pero no la columna: quedaba una franja vacía a la derecha. */
+  table.tabla-inventario th:nth-child(13),table.tabla-inventario td:nth-child(13){display:none}
+  /* Las columnas visibles se repartían en partes iguales y un SKU como
+     ABRAZADERA-AJUSTABLE-RIEL-212 se partía en seis líneas. Se reparte a mano:
+     el SKU y la descripción se llevan casi dos tercios, y cantidad, unidad y
+     precio sólo lo que necesitan para no partirse. Suman 100%, así que la
+     tabla nunca se sale de la A5. */
+  table.tabla-inventario{font-size:11px}
+  table.tabla-inventario th:nth-child(1),table.tabla-inventario td:nth-child(1){width:24%}
+  table.tabla-inventario th:nth-child(5),table.tabla-inventario td:nth-child(5){width:40%}
+  table.tabla-inventario th:nth-child(6),table.tabla-inventario td:nth-child(6){width:9%}
+  table.tabla-inventario th:nth-child(7),table.tabla-inventario td:nth-child(7){width:12%}
+  table.tabla-inventario th:nth-child(9),table.tabla-inventario td:nth-child(9){width:15%}
+  table.tabla-inventario td:nth-child(1){font-size:9.6px}
 
   /* indicadores del panel y del portal */
   .kpis{gap:5px;margin-bottom:8px}
   .kpi{padding:6px 8px;break-inside:avoid}
-  .kpi .et{font-size:6.2px;margin-bottom:2px}
-  .kpi .val{font-size:12px}
-  .kpi .sub{font-size:6.6px;margin-top:2px}
+  .kpi .et{font-size:8.4px;margin-bottom:2px}
+  .kpi .val{font-size:15px}
+  .kpi .sub{font-size:8.6px;margin-top:2px}
   .rejilla{gap:6px}
 
   /* enlaces: en papel el subrayado sólo estorba */
   a{text-decoration:none !important;color:inherit !important;
     border-bottom:0 !important}
-  .doc{box-shadow:none;margin:0;padding:0;max-width:100%;font-size:8.5px}
-  .doc-cab{gap:12px;padding-bottom:9px;margin-bottom:11px}
+  .doc{box-shadow:none;margin:0;padding:0;max-width:100%;font-size:12.5px}
+  .doc-cab{gap:10px;padding-bottom:7px;margin-bottom:8px}
   .doc-cab img{height:46px}
-  .doc-emisor{font-size:7.6px;line-height:1.45}
-  .doc-emisor b{font-size:11px}
-  .doc-tipo{min-width:130px}
-  .doc-tipo .clase{font-size:9.5px;padding:4px 8px}
-  .doc-tipo .numero{font-size:13px;margin-top:4px}
-  .doc-tipo .meta{font-size:7.4px;margin-top:3px}
-  .doc-partes{gap:9px;margin-bottom:10px}
-  .doc-parte{padding:6px 8px;font-size:7.6px;line-height:1.45}
-  .doc-parte h5{font-size:6.6px;margin-bottom:4px;padding-bottom:3px}
-  table.doc-items{font-size:7.6px;margin-bottom:9px}
-  table.doc-items th{font-size:6.6px;padding:4px 5px}
-  table.doc-items td{padding:4px 5px}
-  table.doc-items .esp{font-size:7px;margin-top:2px}
+  .doc-emisor{font-size:11.4px;line-height:1.38}
+  .doc-emisor b{font-size:15px}
+  .doc-tipo{min-width:120px}
+  .doc-tipo .clase{font-size:12.5px;padding:4px 8px}
+  .doc-tipo .numero{font-size:18px;margin-top:4px}
+  .doc-tipo .meta{font-size:10.8px;margin-top:3px}
+  .doc-partes{gap:7px;margin-bottom:7px}
+  .doc-parte{padding:5px 7px;font-size:11.4px;line-height:1.34}
+  .doc-parte h5{font-size:10px;margin-bottom:4px;padding-bottom:3px}
+  table.doc-items{font-size:12px;margin-bottom:7px;table-layout:auto}
+  /* Las columnas numéricas se encogen a su contenido para que la descripción
+     se quede con todo el ancho sobrante: así los renglones cortos —que son la
+     mayoría: la mediana de las cotizaciones reales es de 33 caracteres— caben
+     en una sola línea. Los importes nunca se parten; las cabeceras sí pueden
+     hacerlo («Vr. unitario» en dos líneas ocupa menos que en una). */
+  table.doc-items td.num{width:1%;white-space:nowrap;padding-left:3px;padding-right:3px}
+  table.doc-items th.num{width:1%;white-space:normal;padding-left:3px;padding-right:3px}
+  table.doc-items th{font-size:10.4px;padding:3px 4px}
+  table.doc-items td{padding:3px 4px}
+  table.doc-items .esp{font-size:10.6px;margin-top:2px}
   .doc-totales{gap:12px}
-  .doc-notas{font-size:7.2px;line-height:1.5}
-  .doc-notas h5{font-size:6.6px;margin-bottom:3px}
-  .doc-sumas{width:170px;font-size:8px}
+  .doc-notas{font-size:11px;line-height:1.42}
+  .doc-notas h5{font-size:10px;margin-bottom:3px}
+  .doc-sumas{width:200px;font-size:12px}
   .doc-sumas div{padding:2px 0}
-  .doc-sumas div.total{font-size:10px;padding:5px 7px}
-  .doc-letras{font-size:7.4px;padding:5px 7px;margin-top:7px}
-  .doc-firmas{gap:22px;margin-top:26px;font-size:7.4px}
-  .doc-dian{font-size:6.8px;padding:6px 7px;margin-top:8px}
-  .doc-pie{font-size:6.6px;margin-top:16px;padding-top:8px}
+  .doc-sumas div.total{font-size:14px;padding:5px 7px}
+  .doc-letras{font-size:11px;padding:4px 7px;margin-top:5px}
+  .doc-firmas{gap:22px;margin-top:15px;font-size:11px}
+  .doc-dian{font-size:9.8px;padding:6px 7px;margin-top:8px}
+  .doc-pie{font-size:9.8px;margin-top:9px;padding-top:6px}
   .doc-acciones,.no-imprimir,.cabecera,.barra-superior,.pie,.lateral,.barra-panel{display:none !important}
   .panel{display:block}
   .contenido{padding:0}
@@ -659,5 +696,5 @@ td.alerta-fuerte{background:var(--error-bg);color:var(--error);font-weight:700}
 @media print{
   .estado-cliente,.barra-cupo{break-inside:avoid;page-break-inside:avoid}
   .estado-cliente{padding:8px}
-  .franjas-cartera{font-size:7.4px}
+  .franjas-cartera{font-size:11px}
 }
