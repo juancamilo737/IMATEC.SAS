@@ -93,7 +93,7 @@
       {% endif %}
       <h5>Condiciones</h5>
       <p>Valores en pesos colombianos (COP). {% if f.forma_pago == 'credito' %}
-        Pago a {{ f.fecha_vencimiento }}. {% endif %}
+        {% if f.fecha_vencimiento %}Pago a {{ f.fecha_vencimiento }}.{% else %}Plazo de pago por acordar.{% endif %} {% endif %}
         La mercancía viaja por cuenta y riesgo del comprador. Esta factura presta mérito
         ejecutivo conforme al Código de Comercio.</p>
     </div>

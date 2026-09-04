@@ -36,9 +36,11 @@
         <td><a href="/admin/facturas/{{ f.id }}" class="enlace-doc"><strong>{{ f.numero }}</strong></a></td>
         <td class="silencio">{{ f.fecha_emision }}</td>
         <td>{{ f.razon_social }}<div class="silencio">{{ f.documento }}</div></td>
-        <td>{% if f.saldo > 0 and f.fecha_vencimiento < hoy and f.estado not in ['anulada','borrador'] %}
+        <td>{% if f.saldo > 0 and not f.fecha_vencimiento and f.estado not in ['anulada','borrador'] %}
+              <span class="tag tag-alerta">Sin plazo</span>
+            {% elif f.saldo > 0 and f.fecha_vencimiento < hoy and f.estado not in ['anulada','borrador'] %}
               <span class="tag tag-error">{{ f.fecha_vencimiento }}</span>
-            {% else %}<span class="silencio">{{ f.fecha_vencimiento }}</span>{% endif %}</td>
+            {% else %}<span class="silencio">{{ f.fecha_vencimiento or '—' }}</span>{% endif %}</td>
         <td class="num">{{ f.total|cop }}</td>
         <td class="num">{% if f.saldo > 0 %}<strong>{{ f.saldo|cop }}</strong>{% else %}
           <span class="silencio">—</span>{% endif %}</td>

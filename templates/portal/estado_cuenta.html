@@ -14,6 +14,10 @@
     <div class="val">{{ cartera.vencido|cop }}</div></div>
   <div class="kpi kpi-info"><div class="et">Por vencer</div>
     <div class="val">{{ cartera.por_vencer|cop }}</div></div>
+  {% if cartera.sin_fecha %}
+  <div class="kpi kpi-alerta"><div class="et">Sin plazo acordado</div>
+    <div class="val">{{ cartera.sin_fecha|cop }}</div></div>
+  {% endif %}
   <div class="kpi"><div class="et">Cupo disponible</div>
     <div class="val">{{ cartera.cupo_disponible|cop }}</div></div>
 </div>
@@ -23,13 +27,17 @@
     <span class="silencio" style="margin-left:auto">Al {{ hoy }}</span></div>
   <div class="tabla-envoltura"><table class="datos">
     <thead><tr><th>Corriente</th><th>1 a 30 días</th><th>31 a 60 días</th>
-      <th>61 a 90 días</th><th>Más de 90</th><th class="num">Total</th></tr></thead>
+      <th>61 a 90 días</th><th>Más de 90</th>
+      {% if cartera.franjas.sin_fecha %}<th>Sin plazo</th>{% endif %}
+      <th class="num">Total</th></tr></thead>
     <tbody><tr>
       <td class="num">{{ cartera.franjas.corriente|cop }}</td>
       <td class="num {{ 'alerta-suave' if cartera.franjas.d1_30 }}">{{ cartera.franjas.d1_30|cop }}</td>
       <td class="num {{ 'alerta-suave' if cartera.franjas.d31_60 }}">{{ cartera.franjas.d31_60|cop }}</td>
       <td class="num {{ 'alerta-fuerte' if cartera.franjas.d61_90 }}">{{ cartera.franjas.d61_90|cop }}</td>
       <td class="num {{ 'alerta-fuerte' if cartera.franjas.d90 }}">{{ cartera.franjas.d90|cop }}</td>
+      {% if cartera.franjas.sin_fecha %}
+      <td class="num alerta-suave">{{ cartera.franjas.sin_fecha|cop }}</td>{% endif %}
       <td class="num"><strong>{{ cartera.total|cop }}</strong></td>
     </tr></tbody></table></div>
 </div>
@@ -45,8 +53,10 @@
       <tr>
         <td><a href="/portal/facturas/{{ f.id }}" class="enlace-doc"><strong>{{ f.numero }}</strong></a></td>
         <td class="silencio">{{ f.fecha_emision }}</td>
-        <td>{{ f.fecha_vencimiento }}</td>
-        <td>{% if f.dias_vencido > 0 %}
+        <td>{{ f.fecha_vencimiento or '—' }}</td>
+        <td>{% if f.dias_vencido is none %}
+              <span class="tag tag-alerta">Sin plazo acordado</span>
+            {% elif f.dias_vencido > 0 %}
               <span class="tag {{ 'tag-error' if f.dias_vencido > 30 else 'tag-alerta' }}">
                 {{ f.dias_vencido }} días vencida</span>
             {% else %}

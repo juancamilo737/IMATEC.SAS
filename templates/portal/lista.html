@@ -26,9 +26,11 @@
           <td>{{ d.transportador or '—' }}</td><td class="silencio">{{ d.recibido_por or '—' }}</td>
         {% endif %}
         {% if clase == 'facturas' %}
-          <td>{% if d.saldo > 0 and d.fecha_vencimiento < hoy %}
+          <td>{% if d.saldo > 0 and not d.fecha_vencimiento %}
+                <span class="tag tag-alerta">Sin plazo</span>
+              {% elif d.saldo > 0 and d.fecha_vencimiento < hoy %}
                 <span class="tag tag-error">{{ d.fecha_vencimiento }}</span>
-              {% else %}<span class="silencio">{{ d.fecha_vencimiento }}</span>{% endif %}</td>
+              {% else %}<span class="silencio">{{ d.fecha_vencimiento or '—' }}</span>{% endif %}</td>
           <td class="num">{{ d.total|cop }}</td>
           <td class="num">{% if d.saldo > 0 %}<strong>{{ d.saldo|cop }}</strong>
             {% else %}<span class="silencio">—</span>{% endif %}</td>

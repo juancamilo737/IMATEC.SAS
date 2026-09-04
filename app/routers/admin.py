@@ -72,9 +72,19 @@ def inicio(request: Request, aviso: str = "", tipo: str = "ok"):
         "por_despachar": db.scalar("SELECT COUNT(*) FROM remisiones WHERE estado='pendiente'"),
         "cartera": db.scalar("SELECT COALESCE(SUM(saldo),0) FROM facturas "
                              "WHERE estado NOT IN ('anulada','borrador','pagada')"),
+        # La fecha vacía —las «PDTE PAGO» de la relación de cartera— es menor
+        # que cualquier fecha al comparar textos, así que sin este filtro
+        # entraban las nueve como si estuvieran vencidas.
         "vencidas": db.scalar("SELECT COUNT(*) FROM facturas WHERE saldo>0 "
                               "AND estado NOT IN ('anulada','borrador','pagada') "
+                              "AND fecha_vencimiento <> '' "
                               "AND fecha_vencimiento < date('now','localtime')"),
+        "sin_plazo": db.scalar("SELECT COUNT(*) FROM facturas WHERE saldo>0 "
+                               "AND estado NOT IN ('anulada','borrador','pagada') "
+                               "AND COALESCE(fecha_vencimiento,'')=''"),
+        "sin_plazo_valor": db.scalar("SELECT COALESCE(SUM(saldo),0) FROM facturas WHERE saldo>0 "
+                                     "AND estado NOT IN ('anulada','borrador','pagada') "
+                                     "AND COALESCE(fecha_vencimiento,'')=''"),
         "facturado_mes": db.scalar(
             "SELECT COALESCE(SUM(total),0) FROM facturas WHERE estado NOT IN ('anulada','borrador') "
             "AND strftime('%Y-%m',fecha_emision)=strftime('%Y-%m','now','localtime')"),
@@ -97,7 +107,7 @@ def inicio(request: Request, aviso: str = "", tipo: str = "ok"):
         cartera=db.q("""SELECT fa.*, cl.razon_social FROM facturas fa
                         JOIN clientes cl ON cl.id=fa.cliente_id
                         WHERE fa.saldo>0 AND fa.estado NOT IN ('anulada','borrador','pagada')
-                        ORDER BY fa.fecha_vencimiento LIMIT 6"""),
+                        ORDER BY fa.fecha_vencimiento='' , fa.fecha_vencimiento LIMIT 6"""),
         alertas=db.q("""SELECT * FROM materiales WHERE activo=1 AND cantidad<=stock_minimo
                         ORDER BY cantidad LIMIT 8"""))
 
@@ -715,7 +725,13 @@ def facturas(request: Request, estado: str = "", q: str = "", aviso: str = "", t
              JOIN clientes cl ON cl.id=fa.cliente_id WHERE 1=1"""
     params = []
     if estado == "vencidas":
-        sql += (" AND fa.saldo>0 AND fa.fecha_vencimiento<date('now','localtime') "
+        # Mismo cuidado que en el tablero: sin descartar la fecha vacía, las
+        # «PDTE PAGO» aparecerían aquí como vencidas sin serlo.
+        sql += (" AND fa.saldo>0 AND fa.fecha_vencimiento<>'' "
+                "AND fa.fecha_vencimiento<date('now','localtime') "
+                "AND fa.estado NOT IN ('anulada','borrador','pagada')")
+    elif estado == "sin_plazo":
+        sql += (" AND fa.saldo>0 AND COALESCE(fa.fecha_vencimiento,'')='' "
                 "AND fa.estado NOT IN ('anulada','borrador','pagada')")
     elif estado:
         sql += " AND fa.estado=?"

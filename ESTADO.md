@@ -137,55 +137,88 @@ Ninguna importación borra: actualiza lo que existe y agrega lo nuevo.
 
 ---
 
-## 5. ⚠️ PENDIENTE CRÍTICO — la cartera está mal
+## 5. La cartera — resuelta
 
-**El papá revisó y dice que no se debe todo eso. Tiene razón en dudar.**
+**El papá revisó la primera carga y dijo que no se debía todo eso. Tenía
+razón, y el propio archivo lo demostró.** Quedó en **$29.743.442**, que es
+exactamente la cifra que ellos mismos escribieron al pie de su hoja.
 
-El archivo `RELACION DE CARTERA IMATEC S.A.S..xlsx` tiene **dos hojas**, y se
-sumaron como si fueran cosas distintas:
+### Qué estaba mal
+
+El archivo `RELACION DE CARTERA IMATEC S.A.S..xlsx` tiene dos hojas, y el
+importador cometía dos errores a la vez:
 
 | | Facturas | Valor |
 |---|---|---|
-| **Hoja 1** — «Relación de cartera» | 47 | $29.743.442 |
-| **Hoja 2** — «Estado de cuenta», sólo FERRETERIA SU PROVEEDOR | 15 | $16.420.071 |
-| **Cargado** (las dos, menos 9 sin fecha) | 53 | **$39.011.738** |
+| Se cargaba de más — **Hoja2**, un estado de cuenta suelto | +15 | +$16.420.071 |
+| Se botaba de menos — las filas que dicen **«PDTE PAGO»** | −9 | −$7.151.775 |
+| **Cargado antes** | 53 | **$39.011.738** |
+| **Cargado ahora** | 47 | **$29.743.442** |
 
-### Las dos preguntas que faltan por responder
+**1. Se leían las dos hojas.** La Hoja1 es la relación de cartera y trae su
+total al pie: $29.743.442. La Hoja2 es otra cosa —un `ESTADO DE CUENTA` de un
+solo cliente, FERRETERIA SU PROVEEDOR, con 15 facturas viejas (FEV-453 a
+FEV-560)— y **no está sumada dentro de ese total**. Ese mismo cliente sí
+aparece en la Hoja1 con sus 4 facturas nuevas (FEV-628 en adelante). O sea:
+la empresa no considera esa hoja cartera vigente. Ahora sólo se lee la hoja
+cuyo título dice «relación de cartera»; cualquier otra se reporta como
+omitida. **Ese era el grueso del error: $16,4 millones.**
 
-**1. ¿La Hoja 2 ya está pagada?**
+**2. Se botaban las filas sin fecha de vencimiento.** Nueve facturas dicen
+«PDTE PAGO» donde va el día, y el importador las descartaba. Sí se deben, y
+la prueba es aritmética: las 47 filas de la Hoja1, incluidas esas nueve,
+suman **exactamente** el total escrito al pie. Ahora entran con el
+vencimiento vacío y caen en su propia franja de cobranza, **sin inventarles
+un plazo**.
 
-Son 15 facturas viejas (FEV-453 a FEV-560, de junio a agosto) de FERRETERIA
-SU PROVEEDOR. En la Hoja 1 ese mismo cliente aparece aparte con 4 facturas
-más nuevas por $9.236.360.
+### Cómo quedó repartida
 
-- Si la Hoja 2 **ya se cobró** → ese cliente debe **$9.236.360** y la cartera
-  real es **$22.591.442**
-- Si **sigue pendiente** → debe $25.656.431 y la cartera es la cargada
-
-Que sea un «estado de cuenta» aparte, con facturas más viejas y su propio
-total, hace sospechar que ya se gestionó. Pero son $16 millones de
-diferencia: hay que confirmarlo, no asumirlo.
-
-**2. ¿Las 9 facturas «PDTE PAGO» se deben?**
-
-No traían fecha de vencimiento (decían «PDTE PAGO») y el importador las
-descartó. Suman **$7.151.775**:
-
-| Factura | Cliente | Valor |
+| | Facturas | Valor |
 |---|---|---|
-| FEV-547 | ACUATANK | $3.657.111 |
-| FEV-661 | PROYECTOS AIMONT | $2.144.014 |
-| FEV-687 | AUTO MECHAMIC SOLUTION | $456.960 |
-| FEV-682 | TALLER INDUSTRIAL VELMU | $380.800 |
-| FEV-664 | ACUATANK | $252.280 |
-| FEV-684 | TALLER INDUSTRIAL VELMU | $107.100 |
-| FEV-681 | TALLER INDUSTRIAL VELMU | $85.680 |
-| FEV-679 | PROYECTOS AIMONT | $53.550 |
-| FEV-686 | ACEVALCO | $14.280 |
+| Vencidas | 18 | $5.470.516 |
+| Por vencer | 20 | $17.121.151 |
+| **Sin plazo acordado** («PDTE PAGO») | 9 | $7.151.775 |
+| **Total** | **47** | **$29.743.442** |
 
-Con las dos respuestas se recarga la cartera correcta en un minuto.
+El cambio más visible: **FERRETERIA SU PROVEEDOR pasó de $25.656.431 a
+$9.236.360.**
 
----
+### Defectos que salieron de paso
+
+Al meter facturas con la fecha en blanco aparecieron tres sitios donde una
+cadena vacía se comparaba como si fuera una fecha —y `''` es menor que
+cualquier fecha, así que las nueve se pintaban de rojo como vencidas:
+
+- el KPI «facturas vencidas» del tablero,
+- el filtro `/admin/facturas?estado=vencidas`,
+- los listados de facturas del panel y del portal.
+
+Y en `portal_datos._dias_vencido`, una fecha ilegible devolvía `0`, que se lee
+como «vence hoy»: esas facturas se colaban en la franja corriente como si
+estuvieran al día. Ahora devuelve `None` y hay una franja **«sin plazo»**
+aparte, más un filtro `/admin/facturas?estado=sin_plazo`.
+
+### Salvaguardas para que no se repita
+
+- El importador **compara lo cargado contra el total escrito en la hoja** y
+  reporta la diferencia. Si no cuadra, es que el archivo cambió.
+- Ya no sólo inserta: **reconcilia**. Al recargar actualiza lo que cambió y
+  retira lo que ya no está en la hoja —así fue como salieron las 15 de la
+  Hoja2 sin tener que borrar la base.
+- Sólo toca las facturas que él mismo creó (las marcadas «Saldo trasladado de
+  la relación de cartera»). Una factura hecha desde el panel, o una a la que
+  ya se le registró un abono, no se pisa nunca.
+
+### Lo único que queda por revisar a mano
+
+- **FEV-927, GRUPO ACERO Y CONFORT ($1.857.200)** trae escrito «ABONÓ» en el
+  archivo, pero no dice de cuánto fue el abono. Se cargó por el valor
+  completo —que es como está sumada en el total de ellos— y la anotación
+  quedó copiada en las observaciones de la factura. Cuando él diga el monto,
+  se registra el pago desde el panel y el saldo se ajusta solo.
+- Las **9 facturas «PDTE PAGO»** necesitan que alguien les acuerde una fecha
+  de vencimiento. Están en `/admin/facturas?estado=sin_plazo`.
+
 
 ## 6. Hallazgo importante sobre los precios
 
@@ -244,7 +277,8 @@ fechas).
 
 Por orden de importancia:
 
-1. **Resolver la cartera** (sección 5) y recargarla.
+1. ~~Resolver la cartera~~ — hecho, ver sección 5. Falta el monto del
+   abono de GRUPO ACERO Y CONFORT y ponerle plazo a las 9 «PDTE PAGO».
 2. **Subir los archivos 1, 2 y 3** desde `~/Desktop/SUBIR A IMATEC/`. Hoy
    producción está vacía: todo lo importado está sólo en la copia local.
 3. **Cambiar la contraseña** de administrador.

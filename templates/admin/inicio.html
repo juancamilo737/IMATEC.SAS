@@ -26,7 +26,7 @@
   <div class="kpi {{ 'kpi-error' if k.vencidas else 'kpi-ok' }}">
     <div class="et">Cartera pendiente</div>
     <div class="val">{{ k.cartera|cop }}</div>
-    <div class="sub">{% if k.vencidas %}<strong style="color:var(--error)">{{ k.vencidas }} factura(s) vencida(s)</strong>{% else %}Todo al día{% endif %}</div>
+    <div class="sub">{% if k.vencidas %}<strong style="color:var(--error)">{{ k.vencidas }} factura(s) vencida(s)</strong>{% else %}Ninguna vencida{% endif %}{% if k.sin_plazo %} · <a href="/admin/facturas?estado=sin_plazo">{{ k.sin_plazo }} sin plazo ({{ k.sin_plazo_valor|cop }})</a>{% endif %}</div>
   </div>
   <div class="kpi kpi-ok">
     <div class="et">Facturado este mes</div>
@@ -96,7 +96,8 @@
         <tr><td><a href="/admin/facturas/{{ f.id }}" class="enlace-doc">{{ f.numero }}</a></td>
             <td>{{ f.razon_social }}</td>
             <td class="{{ 'silencio' if f.fecha_vencimiento >= hoy }}">
-              {% if f.fecha_vencimiento < hoy %}<span class="tag tag-error">{{ f.fecha_vencimiento }}</span>
+              {% if not f.fecha_vencimiento %}<span class="tag tag-alerta">Sin plazo</span>
+              {% elif f.fecha_vencimiento < hoy %}<span class="tag tag-error">{{ f.fecha_vencimiento }}</span>
               {% else %}{{ f.fecha_vencimiento }}{% endif %}</td>
             <td class="num"><strong>{{ f.saldo|cop }}</strong></td></tr>
       {% endfor %}</tbody></table></div>
