@@ -8,44 +8,44 @@
       <div class="acciones"><button class="btn btn-sm">Guardar cambios</button></div></div>
     <div class="tarjeta-cuerpo">
       <div class="fila">
-        <div class="campo" style="grid-column:span 2"><label>Razón social</label>
-          <input type="text" name="empresa.razon_social" value="{{ e.razon_social }}"></div>
-        <div class="campo"><label>NIT</label>
-          <input type="text" name="empresa.nit" value="{{ e.nit }}" placeholder="901234567"></div>
-        <div class="campo"><label>DV</label>
-          <input type="text" name="empresa.dv" value="{{ e.dv }}" maxlength="1"></div>
+        <div class="campo" style="grid-column:span 2"><label for="c_razon_social">Razón social</label>
+          <input id="c_razon_social" type="text" name="empresa.razon_social" value="{{ e.razon_social }}"></div>
+        <div class="campo"><label for="c_nit">NIT</label>
+          <input id="c_nit" type="text" name="empresa.nit" value="{{ e.nit }}" placeholder="901234567"></div>
+        <div class="campo"><label for="c_dv">DV</label>
+          <input id="c_dv" type="text" name="empresa.dv" value="{{ e.dv }}" maxlength="1"></div>
       </div>
       <div class="fila">
-        <div class="campo" style="grid-column:span 2"><label>Dirección</label>
-          <input type="text" name="empresa.direccion" value="{{ e.direccion }}"></div>
-        <div class="campo"><label>Ciudad</label>
-          <input type="text" name="empresa.ciudad" value="{{ e.ciudad }}"></div>
-        <div class="campo"><label>Departamento</label>
-          <input type="text" name="empresa.departamento" value="{{ e.departamento }}"></div>
+        <div class="campo" style="grid-column:span 2"><label for="c_direccion">Dirección</label>
+          <input id="c_direccion" type="text" name="empresa.direccion" value="{{ e.direccion }}"></div>
+        <div class="campo"><label for="c_ciudad">Ciudad</label>
+          <input id="c_ciudad" type="text" name="empresa.ciudad" value="{{ e.ciudad }}"></div>
+        <div class="campo"><label for="c_departamento">Departamento</label>
+          <input id="c_departamento" type="text" name="empresa.departamento" value="{{ e.departamento }}"></div>
       </div>
       <div class="fila">
-        <div class="campo"><label>Teléfono</label>
-          <input type="text" name="empresa.telefono" value="{{ e.telefono }}"></div>
-        <div class="campo"><label>Email</label>
-          <input type="email" name="empresa.email" value="{{ e.email }}"></div>
-        <div class="campo"><label>Sitio web</label>
-          <input type="text" name="empresa.web" value="{{ e.web }}"></div>
+        <div class="campo"><label for="c_telefono">Teléfono</label>
+          <input id="c_telefono" type="text" name="empresa.telefono" value="{{ e.telefono }}"></div>
+        <div class="campo"><label for="c_email">Email</label>
+          <input id="c_email" type="email" name="empresa.email" value="{{ e.email }}"></div>
+        <div class="campo"><label for="c_web">Sitio web</label>
+          <input id="c_web" type="text" name="empresa.web" value="{{ e.web }}"></div>
       </div>
       <div class="fila">
-        <div class="campo" style="grid-column:span 2"><label>Horario</label>
-          <input type="text" name="empresa.horario" value="{{ e.horario }}"></div>
-        <div class="campo"><label>Régimen</label>
-          <input type="text" name="empresa.regimen" value="{{ e.regimen }}"></div>
-        <div class="campo"><label>Actividad CIIU</label>
-          <input type="text" name="empresa.actividad_ciiu" value="{{ e.actividad_ciiu }}"></div>
+        <div class="campo" style="grid-column:span 2"><label for="c_horario">Horario</label>
+          <input id="c_horario" type="text" name="empresa.horario" value="{{ e.horario }}"></div>
+        <div class="campo"><label for="c_regimen">Régimen</label>
+          <input id="c_regimen" type="text" name="empresa.regimen" value="{{ e.regimen }}"></div>
+        <div class="campo"><label for="c_actividad_ciiu">Actividad CIIU</label>
+          <input id="c_actividad_ciiu" type="text" name="empresa.actividad_ciiu" value="{{ e.actividad_ciiu }}"></div>
       </div>
       <div class="fila">
-        <div class="campo"><label>IVA por defecto (%)</label>
-          <input type="number" name="empresa.iva_defecto" value="{{ e.iva_defecto }}" step="0.5"></div>
-        <div class="campo"><label>Validez de cotización (días)</label>
-          <input type="number" name="empresa.validez_cotizacion_dias" value="{{ e.validez_cotizacion_dias }}"></div>
-        <div class="campo"><label>Plazo de factura (días)</label>
-          <input type="number" name="empresa.plazo_factura_dias" value="{{ e.plazo_factura_dias }}"></div>
+        <div class="campo"><label for="c_iva_defecto">IVA por defecto (%)</label>
+          <input id="c_iva_defecto" type="number" name="empresa.iva_defecto" value="{{ e.iva_defecto }}" step="0.5"></div>
+        <div class="campo"><label for="c_validez_cotizacion_dias">Validez de cotización (días)</label>
+          <input id="c_validez_cotizacion_dias" type="number" name="empresa.validez_cotizacion_dias" value="{{ e.validez_cotizacion_dias }}"></div>
+        <div class="campo"><label for="c_plazo_factura_dias">Plazo de factura (días)</label>
+          <input id="c_plazo_factura_dias" type="number" name="empresa.plazo_factura_dias" value="{{ e.plazo_factura_dias }}"></div>
       </div>
     </div>
   </div>
@@ -65,31 +65,31 @@
         Los datos de abajo son los que exige el Anexo Técnico 1.9.
       </div>
       <div class="fila">
-        <div class="campo" style="grid-column:span 2"><label>Resolución de numeración</label>
-          <input type="text" name="empresa.dian_resolucion" value="{{ e.dian_resolucion }}"
+        <div class="campo" style="grid-column:span 2"><label for="c_dian_resolucion">Resolución de numeración</label>
+          <input id="c_dian_resolucion" type="text" name="empresa.dian_resolucion" value="{{ e.dian_resolucion }}"
                  placeholder="18760000001234"></div>
-        <div class="campo"><label>Fecha de la resolución</label>
-          <input type="date" name="empresa.dian_fecha_resolucion" value="{{ e.dian_fecha_resolucion }}"></div>
-        <div class="campo"><label>Prefijo</label>
-          <input type="text" name="empresa.dian_prefijo" value="{{ e.dian_prefijo }}"></div>
+        <div class="campo"><label for="c_dian_fecha_resolucion">Fecha de la resolución</label>
+          <input id="c_dian_fecha_resolucion" type="date" name="empresa.dian_fecha_resolucion" value="{{ e.dian_fecha_resolucion }}"></div>
+        <div class="campo"><label for="c_dian_prefijo">Prefijo</label>
+          <input id="c_dian_prefijo" type="text" name="empresa.dian_prefijo" value="{{ e.dian_prefijo }}"></div>
       </div>
       <div class="fila">
-        <div class="campo"><label>Rango desde</label>
-          <input type="number" name="empresa.dian_rango_desde" value="{{ e.dian_rango_desde }}"></div>
-        <div class="campo"><label>Rango hasta</label>
-          <input type="number" name="empresa.dian_rango_hasta" value="{{ e.dian_rango_hasta }}"></div>
-        <div class="campo"><label>Ambiente</label>
-          <select name="empresa.dian_ambiente">
+        <div class="campo"><label for="c_dian_rango_desde">Rango desde</label>
+          <input id="c_dian_rango_desde" type="number" name="empresa.dian_rango_desde" value="{{ e.dian_rango_desde }}"></div>
+        <div class="campo"><label for="c_dian_rango_hasta">Rango hasta</label>
+          <input id="c_dian_rango_hasta" type="number" name="empresa.dian_rango_hasta" value="{{ e.dian_rango_hasta }}"></div>
+        <div class="campo"><label for="c_dian_ambiente">Ambiente</label>
+          <select id="c_dian_ambiente" name="empresa.dian_ambiente">
             <option value="pruebas" {{ 'selected' if e.dian_ambiente=='pruebas' }}>Pruebas (habilitación)</option>
             <option value="produccion" {{ 'selected' if e.dian_ambiente=='produccion' }}>Producción</option>
           </select></div>
       </div>
       <div class="fila-2">
-        <div class="campo"><label>Clave técnica</label>
-          <input type="text" name="empresa.dian_clave_tecnica" value="{{ e.dian_clave_tecnica }}">
+        <div class="campo"><label for="c_dian_clave_tecnica">Clave técnica</label>
+          <input id="c_dian_clave_tecnica" type="text" name="empresa.dian_clave_tecnica" value="{{ e.dian_clave_tecnica }}">
           <div class="ayuda">La entrega la DIAN junto con la resolución.</div></div>
-        <div class="campo"><label>Proveedor tecnológico</label>
-          <input type="text" name="empresa.dian_proveedor" value="{{ e.dian_proveedor }}"
+        <div class="campo"><label for="c_dian_proveedor">Proveedor tecnológico</label>
+          <input id="c_dian_proveedor" type="text" name="empresa.dian_proveedor" value="{{ e.dian_proveedor }}"
                  placeholder="Factus / Alegra / Siigo…"></div>
       </div>
       <button class="btn">Guardar configuración</button>
