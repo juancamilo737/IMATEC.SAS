@@ -63,8 +63,9 @@ def solicitudes(request: Request):
     if r:
         return r
     filas = _mio("pedidos", cli["id"])
-    for p in filas:
-        p["items"] = db.q("SELECT * FROM pedido_items WHERE pedido_id=?", (p["id"],))
+    # Igual que en el panel: todos los renglones en una sola consulta.
+    from .admin import _adjuntar_items
+    _adjuntar_items(filas, "pedido_items", "pedido_id")
     return render(request, "portal/solicitudes.html", seccion="pedidos", cliente=cli, pedidos=filas)
 
 

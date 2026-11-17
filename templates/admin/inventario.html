@@ -81,7 +81,7 @@
             <button class="btn btn-sm btn-claro" title="Entrada / salida"
               onclick='moverItem({{ m.id }}, {{ m.sku|tojson }}, {{ m.unidad|tojson }}, {{ m.cantidad }})'>⇅</button>
             <button class="btn btn-sm btn-claro" title="Editar"
-              onclick='editarItem({{ m|tojson }})'>✎</button>
+              onclick='editarItem({{ m.id }})'>✎</button>
           </td>
         </tr>
       {% endfor %}
@@ -294,9 +294,20 @@ function nuevoItem(){
   setTimeout(()=>document.getElementById('f-sku').focus(), 60);
 }
 
-function editarItem(m){
+async function editarItem(id){
+  // Se pide sólo el material que se va a editar. Traerlos los 3.200 por si
+  // acaso costaba 1,3 MB en cada visita a la pantalla.
+  let m;
+  try {
+    const r = await fetch('/admin/inventario/' + id + '/datos');
+    if (!r.ok) throw new Error(r.status);
+    m = await r.json();
+  } catch (e) {
+    alert('No se pudo cargar el material. Revise la conexión e intente de nuevo.');
+    return;
+  }
   document.getElementById('m-item-titulo').textContent = 'Editar ' + m.sku;
-  const v = {'f-id':m.id,'f-sku':m.sku,'f-categoria':m.categoria,'f-material':m.material,
+  const v = {'f-id':id,'f-sku':m.sku,'f-categoria':m.categoria,'f-material':m.material,
     'f-diametro':m.diametro,'f-descripcion':m.descripcion,'f-cantidad':m.cantidad,
     'f-unidad':m.unidad,'f-minimo':m.stock_minimo,'f-costo':m.costo_unitario,
     'f-proveedor':m.proveedor,'f-ubicacion':m.ubicacion,'f-notas':m.notas,

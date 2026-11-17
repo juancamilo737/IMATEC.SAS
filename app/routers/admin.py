@@ -4,7 +4,7 @@ import shutil
 from datetime import date, datetime
 
 from fastapi import APIRouter, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
 from .. import db, documentos as D, excel_sync
 from ..auth import crear_usuario, current_user, es_staff, hash_password
@@ -115,6 +115,31 @@ def inicio(request: Request, aviso: str = "", tipo: str = "ok"):
 # =====================================================================
 #  INVENTARIO DE MATERIALES  (el Excel de IMATEC, ahora editable)
 # =====================================================================
+# Campos que el formulario de edición de materiales necesita. Los demás
+# (creado_en, actualizado_en, activo) no se editan y no salen de aquí.
+CAMPOS_EDITOR_MATERIAL = ("id", "sku", "categoria", "material", "diametro",
+                          "descripcion", "cantidad", "unidad", "stock_minimo",
+                          "costo_unitario", "proveedor", "ubicacion", "notas",
+                          "precio_venta", "publicado")
+
+
+@router.get("/inventario/{mid}/datos")
+def inventario_datos(request: Request, mid: int):
+    """Devuelve un material para llenar el formulario de edición.
+
+    Antes la pantalla traía los 3.200 registros incrustados por si acaso: 1,3 MB
+    que casi nunca se usaban, porque sólo se edita de a uno. Ahora se piden
+    cuando se pulsa el lápiz.
+    """
+    u, r = _guard(request)
+    if r:
+        return r
+    m = db.q1("SELECT * FROM materiales WHERE id=? AND activo=1", (mid,))
+    if not m:
+        return JSONResponse({"error": "no existe"}, status_code=404)
+    return JSONResponse({c: m.get(c) for c in CAMPOS_EDITOR_MATERIAL})
+
+
 @router.get("/inventario")
 def inventario(request: Request, q: str = "", categoria: str = "", material: str = "",
                estado: str = "", aviso: str = "", tipo: str = "ok"):
@@ -348,10 +373,17 @@ def clientes(request: Request, q: str = "", aviso: str = "", tipo: str = "ok"):
         params += [f"%{q}%"] * 4
     sql += " ORDER BY razon_social"
     filas = db.q(sql, params)
+    # Antes esto lanzaba dos consultas POR CLIENTE: con 174 clientes eran 349
+    # viajes a la base para pintar una pantalla. Ahora son dos, y lo que falta
+    # se busca en memoria.
+    saldos = {r["cliente_id"]: r["saldo"] for r in db.q(
+        "SELECT cliente_id, COALESCE(SUM(saldo),0) AS saldo FROM facturas "
+        "WHERE estado NOT IN ('anulada','borrador') GROUP BY cliente_id")}
+    con_acceso = {r["cliente_id"] for r in db.q(
+        "SELECT DISTINCT cliente_id FROM usuarios WHERE cliente_id IS NOT NULL")}
     for c in filas:
-        c["saldo"] = db.scalar("SELECT COALESCE(SUM(saldo),0) FROM facturas WHERE cliente_id=? "
-                               "AND estado NOT IN ('anulada','borrador')", (c["id"],))
-        c["tiene_acceso"] = bool(db.q1("SELECT 1 FROM usuarios WHERE cliente_id=?", (c["id"],)))
+        c["saldo"] = saldos.get(c["id"], 0)
+        c["tiene_acceso"] = c["id"] in con_acceso
     return render(request, "admin/clientes.html", seccion="clientes", clientes=filas, q=q,
                   aviso=aviso, aviso_tipo=tipo)
 
@@ -435,8 +467,7 @@ def pedidos(request: Request, estado: str = "", aviso: str = "", tipo: str = "ok
         params.append(estado)
     sql += " ORDER BY id DESC LIMIT 200"
     filas = db.q(sql, params)
-    for p in filas:
-        p["items"] = db.q("SELECT * FROM pedido_items WHERE pedido_id=?", (p["id"],))
+    _adjuntar_items(filas, "pedido_items", "pedido_id")
     return render(request, "admin/pedidos.html", seccion="pedidos", pedidos=filas,
                   estado=estado, aviso=aviso, aviso_tipo=tipo,
                   clientes=db.q("SELECT id,razon_social,documento,ciudad FROM clientes "
@@ -507,6 +538,29 @@ def cotizacion_editar(request: Request, cid: int):
         return _volver("/admin/cotizaciones", "Cotización no encontrada.", "error")
     return render(request, "admin/cotizacion_editar.html", seccion="cotizaciones", c=c,
                   cliente_id=c["cliente_id"], **_datos_editor())
+
+
+def _adjuntar_items(filas: list, tabla: str, clave: str, orden: str = "") -> None:
+    """Carga los renglones de varios documentos en UNA consulta.
+
+    El patrón de antes —una consulta por documento dentro del bucle— se nota
+    poco con tres remisiones y se vuelve lento con trescientas. Aquí se piden
+    todos de golpe y se reparten en memoria.
+    """
+    ids = [f["id"] for f in filas]
+    for f in filas:
+        f["items"] = []
+    if not ids:
+        return
+    marcas = ",".join("?" * len(ids))
+    sql = f"SELECT * FROM {tabla} WHERE {clave} IN ({marcas})"
+    if orden:
+        sql += " " + orden
+    por_documento: dict = {}
+    for it in db.q(sql, ids):
+        por_documento.setdefault(it[clave], []).append(it)
+    for f in filas:
+        f["items"] = por_documento.get(f["id"], [])
 
 
 def _datos_editor() -> dict:
@@ -625,9 +679,7 @@ def despachos(request: Request, aviso: str = "", tipo: str = "ok"):
              JOIN clientes cl ON cl.id=re.cliente_id WHERE re.estado=? ORDER BY re.fecha, re.id"""
     filas = {e: db.q(sql, (e,)) for e in ("pendiente", "despachada", "entregada")}
     for grupo in filas.values():
-        for rem in grupo:
-            rem["items"] = db.q("SELECT * FROM remision_items WHERE remision_id=? ORDER BY orden",
-                                (rem["id"],))
+        _adjuntar_items(grupo, "remision_items", "remision_id", "ORDER BY orden")
     return render(request, "admin/despachos.html", seccion="despachos", grupos=filas,
                   aviso=aviso, aviso_tipo=tipo)
 
