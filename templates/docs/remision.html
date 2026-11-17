@@ -21,26 +21,34 @@
 {% block contenido %}
 <div class="doc">
   {% with clase='Remisión', numero=r.numero,
-          meta='Fecha: ' ~ r.fecha ~ '<br>Estado: ' ~ r.estado|capitalize ~
+          meta='Fecha: ' ~ r.fecha ~
                ('<br>Cotización: ' ~ r.cotizacion.numero if r.cotizacion else '') ~
                ('<br>O. compra: ' ~ r.orden_compra if r.orden_compra else '') %}
     {% include "docs/_encabezado.html" %}
   {% endwith %}
 
-  {% with cl=r.cliente, titulo_2='Entrega',
-          cuerpo_2='<strong>Dirección:</strong> ' ~ (r.direccion_entrega or r.cliente.direccion) ~
-                   '<br><strong>Ciudad:</strong> ' ~ (r.ciudad_entrega or r.cliente.ciudad) ~
-                   '<br><strong>Transportador:</strong> ' ~ (r.transportador or '—') ~
-                   ('<br><strong>Placa:</strong> ' ~ r.placa if r.placa else '') ~
-                   ('<br><strong>Conductor:</strong> ' ~ r.conductor if r.conductor else '') %}
+  {% with cl=r.cliente %}
     {% include "docs/_cliente.html" %}
   {% endwith %}
+
+  {# Sólo lo que no se puede deducir del cliente. Si la entrega va a la
+     dirección de siempre y no hay transportador, no se imprime nada. #}
+  {% set otra_dir = r.direccion_entrega and r.direccion_entrega != r.cliente.direccion %}
+  {% set envio = [] %}
+  {% if otra_dir %}
+    {% set _ = envio.append('<strong>Entregar en:</strong> ' ~ r.direccion_entrega ~
+                            (', ' ~ r.ciudad_entrega if r.ciudad_entrega else '')) %}
+  {% endif %}
+  {% if r.transportador %}{% set _ = envio.append('<strong>Transportador:</strong> ' ~ r.transportador) %}{% endif %}
+  {% if r.placa %}{% set _ = envio.append('<strong>Placa:</strong> ' ~ r.placa) %}{% endif %}
+  {% if r.conductor %}{% set _ = envio.append('<strong>Conductor:</strong> ' ~ r.conductor) %}{% endif %}
+  {% if envio %}<div class="doc-envio">{{ envio | join(' · ') | safe }}</div>{% endif %}
 
   {% set con_valores = r['items'] | selectattr('precio') | list | length > 0 %}
   <table class="doc-items">
     <thead><tr><th style="width:26px">#</th><th>Descripción</th>
-      <th class="num">Cantidad</th><th class="num">Unidad</th>
-      {% if con_valores %}<th class="num">Vr. unitario</th><th class="num">Valor</th>
+      <th class="num">Cant.</th><th class="num">Und.</th>
+      {% if con_valores %}<th class="num">V. unit.</th><th class="num">Valor</th>
       {% else %}<th>Observación</th>{% endif %}</tr></thead>
     <tbody>
     {% for i in r['items'] %}
@@ -74,10 +82,8 @@
       <div class="doc-notas">
         {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
         <h5>Importante</h5>
-        <p>Este documento acredita la entrega de los bienes descritos.
-        <strong>No es una factura de venta</strong> y no presta mérito ejecutivo. Quien
-        recibe declara haber revisado cantidades y estado de la mercancía al momento de
-        la entrega.</p>
+        <p><strong>No es una factura de venta</strong> ni presta mérito ejecutivo. Quien
+        firma declara haber revisado cantidades y estado de la mercancía.</p>
       </div>
       <div class="doc-sumas">
         <div><span>Subtotal</span><span>{{ subtotal.v|cop }}</span></div>
@@ -90,9 +96,8 @@
     <div class="doc-notas" style="margin-bottom:10px">
       {% if r.observaciones %}<h5>Observaciones</h5><p>{{ r.observaciones }}</p>{% endif %}
       <h5>Importante</h5>
-      <p>Este documento acredita la entrega de los bienes descritos. <strong>No es una
-      factura de venta</strong> y no presta mérito ejecutivo. Quien recibe declara haber
-      revisado cantidades y estado de la mercancía al momento de la entrega.</p>
+      <p><strong>No es una factura de venta</strong> ni presta mérito ejecutivo. Quien
+      firma declara haber revisado cantidades y estado de la mercancía.</p>
     </div>
   {% endif %}
 
@@ -103,9 +108,8 @@
       <span class="silencio">Recibe conforme — Nombre, C.C. y fecha</span></div>
   </div>
 
-  <div class="doc-pie">
-    {{ empresa.razon_social }} · {{ empresa.direccion }}, {{ empresa.ciudad }} ·
-    {{ empresa.telefono }}{% if r.fecha_entrega %} · Entregada el {{ r.fecha_entrega }}{% endif %}
-  </div>
+  {% if r.fecha_entrega %}
+  <div class="doc-pie">Entregada el {{ r.fecha_entrega }}</div>
+  {% endif %}
 </div>
 {% endblock %}

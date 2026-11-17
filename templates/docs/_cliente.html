@@ -1,15 +1,24 @@
-<div class="doc-partes">
+{# Si el documento no trae un segundo bloque, Cliente se queda con todo el
+   ancho y sus datos van en una sola línea separados por «·»: seis renglones
+   apilados se vuelven dos. #}
+{% set con_2 = titulo_2 is defined and titulo_2 %}
+{% set datos = [] %}
+{% if cl.documento %}
+  {% set _ = datos.append(cl.tipo_documento ~ ' ' ~ cl.documento ~ ('-' ~ cl.dv if cl.dv else '')) %}
+{% endif %}
+{% if cl.direccion %}{% set _ = datos.append(cl.direccion) %}{% endif %}
+{% if cl.ciudad %}{% set _ = datos.append(cl.ciudad ~ (', ' ~ cl.departamento if cl.departamento else '')) %}{% endif %}
+{% if cl.telefono %}{% set _ = datos.append('Tel: ' ~ cl.telefono) %}{% endif %}
+<div class="doc-partes{% if not con_2 %} sola{% endif %}">
   <div class="doc-parte">
     <h5>Cliente</h5>
-    <strong>{{ cl.razon_social }}</strong><br>
-    {{ cl.tipo_documento }} {{ cl.documento }}{% if cl.dv %}-{{ cl.dv }}{% endif %}<br>
-    {{ cl.direccion }}<br>
-    {{ cl.ciudad }}, {{ cl.departamento }}<br>
-    {% if cl.telefono %}Tel: {{ cl.telefono }}<br>{% endif %}
-    {% if cl.email %}{{ cl.email }}{% endif %}
+    <strong>{{ cl.razon_social }}</strong>
+    <div class="doc-parte-datos">{{ datos | join(' · ') }}</div>
   </div>
+  {% if con_2 %}
   <div class="doc-parte">
     <h5>{{ titulo_2 }}</h5>
     {{ cuerpo_2|safe }}
   </div>
+  {% endif %}
 </div>

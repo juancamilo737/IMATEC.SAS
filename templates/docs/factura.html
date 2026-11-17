@@ -47,9 +47,9 @@
 
 <div class="doc">
   {% with clase='Factura de venta', numero=f.numero,
-          meta='Emisión: ' ~ f.fecha_emision ~ '<br>Vencimiento: ' ~ (f.fecha_vencimiento or '—') ~
-               '<br>Pago: ' ~ f.forma_pago|capitalize ~ ' · ' ~ f.medio_pago|capitalize ~
-               '<br>Estado: ' ~ f.estado|replace('_',' ')|capitalize %}
+          meta=('Emisión: ' ~ f.fecha_emision if f.fecha_emision else '') ~
+               ('<br>Vencimiento: ' ~ f.fecha_vencimiento if f.fecha_vencimiento else '') ~
+               '<br>Pago: ' ~ f.forma_pago|capitalize ~ ' · ' ~ f.medio_pago|capitalize %}
     {% include "docs/_encabezado.html" %}
   {% endwith %}
 
@@ -64,7 +64,7 @@
 
   <table class="doc-items">
     <thead><tr><th style="width:26px">#</th><th>Descripción</th><th class="num">Cant.</th>
-      <th class="num">Unidad</th><th class="num">Vr. unitario</th><th class="num">Desc.</th>
+      <th class="num">Und.</th><th class="num">V. unit.</th><th class="num">Desc.</th>
       <th class="num">IVA</th><th class="num">Valor</th></tr></thead>
     <tbody>
     {% for i in f['items'] %}
@@ -120,17 +120,8 @@
   </div>
   {% endif %}
 
-  <div class="doc-firmas">
-    <div class="doc-firma">{{ f.elaborado_por or empresa.razon_social }}<br>
-      <span class="silencio">Elaboró</span></div>
-    <div class="doc-firma">{{ f.cliente.razon_social }}<br>
-      <span class="silencio">Recibido — Nombre, C.C. y fecha</span></div>
-  </div>
 
-  <div class="doc-pie">
-    {{ empresa.razon_social }}{% if empresa.nit %} · NIT {{ empresa.nit }}{% if empresa.dv %}-{{ empresa.dv }}{% endif %}{% endif %}
-    · {{ empresa.direccion }}, {{ empresa.ciudad }} · {{ empresa.telefono }} · {{ empresa.web }}
-  </div>
+
 </div>
 
 {% if panel %}

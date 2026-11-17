@@ -1,3 +1,6 @@
+{# La dirección web se quitó del papel: nadie teclea una URL leída en una
+   remisión, y el renglón hacía falta arriba. El NIT y el régimen se quedan
+   porque en la factura son obligatorios. #}
 <div class="doc-cab">
   <img src="/static/img/logo-imatec.png" alt="IMATEC S.A.S.">
   <div class="doc-emisor">
@@ -5,8 +8,7 @@
     {% if empresa.nit %}NIT {{ empresa.nit }}{% if empresa.dv %}-{{ empresa.dv }}{% endif %} · {% endif %}
     {{ empresa.regimen }}<br>
     {{ empresa.direccion }} · {{ empresa.ciudad }}, {{ empresa.departamento }}<br>
-    Tel: {{ empresa.telefono }}{% if empresa.email %} · {{ empresa.email }}{% endif %}<br>
-    {{ empresa.web }}
+    Tel: {{ empresa.telefono }}{% if empresa.email %} · {{ empresa.email }}{% endif %}
   </div>
   <div class="doc-tipo">
     <span class="clase">{{ clase }}</span>
