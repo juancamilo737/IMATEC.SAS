@@ -17,10 +17,12 @@
       <div class="fila">
         <div class="campo" style="grid-column:span 2">
           <label>Cliente *</label>
-          <select name="cliente_id" required>
+          <select name="cliente_id" required data-buscable
+                  data-placeholder="Escriba el nombre o el NIT del cliente…">
             <option value="">— Seleccione el cliente —</option>
             {% for cl in clientes %}
-            <option value="{{ cl.id }}" {{ 'selected' if cliente_id and cl.id|string == cliente_id|string }}>
+            <option value="{{ cl.id }}" data-busca="{{ cl.ciudad }}"
+              {{ 'selected' if cliente_id and cl.id|string == cliente_id|string }}>
               {{ cl.razon_social }} · {{ cl.documento }}</option>
             {% endfor %}
           </select>
@@ -82,6 +84,7 @@
 
 {% block scripts %}
 <script src="/static/js/editor.js"></script>
+<script src="/static/js/buscador.js"></script>
 <script>
 const PRODUCTOS = {{ productos|tojson }};
 IVA_DEFECTO = {{ iva_defecto }};

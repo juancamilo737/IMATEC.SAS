@@ -439,7 +439,7 @@ def pedidos(request: Request, estado: str = "", aviso: str = "", tipo: str = "ok
         p["items"] = db.q("SELECT * FROM pedido_items WHERE pedido_id=?", (p["id"],))
     return render(request, "admin/pedidos.html", seccion="pedidos", pedidos=filas,
                   estado=estado, aviso=aviso, aviso_tipo=tipo,
-                  clientes=db.q("SELECT id,razon_social,documento FROM clientes "
+                  clientes=db.q("SELECT id,razon_social,documento,ciudad FROM clientes "
                                 "WHERE activo=1 ORDER BY razon_social"))
 
 
@@ -511,7 +511,8 @@ def cotizacion_editar(request: Request, cid: int):
 
 def _datos_editor() -> dict:
     return {
-        "clientes": db.q("SELECT id,razon_social,documento,condicion_pago,descuento_pct "
+        "clientes": db.q("SELECT id,razon_social,documento,ciudad,"
+                         "condicion_pago,descuento_pct "
                          "FROM clientes WHERE activo=1 ORDER BY razon_social"),
         "productos": db.q("""SELECT p.id,p.sku,p.nombre,p.precio,p.unidad,p.iva_pct,
                              p.especificaciones, c.nombre AS categoria FROM productos p

@@ -23,11 +23,14 @@
       {% if p.estado in ['nuevo','en_cotizacion'] %}
       <form method="post" action="/admin/pedidos/cotizar" style="display:flex;gap:.5rem">
         <input type="hidden" name="pedido_id" value="{{ p.id }}">
-        <select name="cliente_id" required style="min-width:230px;padding:.5rem .7rem;font-size:.85rem">
+        <select name="cliente_id" required data-buscable
+                data-placeholder="Escriba el nombre del cliente…"
+                style="min-width:250px;padding:.5rem .7rem;font-size:.85rem">
           <option value="">— Asignar a cliente —</option>
           {% for cl in clientes %}
-          <option value="{{ cl.id }}" {{ 'selected' if p.cliente_id == cl.id }}>
-            {{ cl.razon_social }}</option>
+          <option value="{{ cl.id }}" data-busca="{{ cl.ciudad }}"
+                  {{ 'selected' if p.cliente_id == cl.id }}>
+            {{ cl.razon_social }} · {{ cl.documento }}</option>
           {% endfor %}
         </select>
         <button class="btn btn-sm">Convertir en cotización</button>
@@ -64,4 +67,8 @@
   <a href="/catalogo" class="btn btn-claro" style="margin-top:1rem">Ver el catálogo público</a>
 </div></div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/buscador.js"></script>
 {% endblock %}
