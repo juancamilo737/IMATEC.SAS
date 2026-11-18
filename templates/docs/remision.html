@@ -104,12 +104,6 @@
     </div>
   {% endif %}
 
-  <div class="doc-firmas">
-    <div class="doc-firma">{{ r.elaborado_por or empresa.razon_social }}<br>
-      <span class="silencio">Entrega — {{ empresa.razon_social }}</span></div>
-    <div class="doc-firma">{{ r.recibido_por or '' }}<br>
-      <span class="silencio">Recibe conforme — Nombre, C.C. y fecha</span></div>
-  </div>
 
   {% if r.fecha_entrega %}
   <div class="doc-pie">Entregada el {{ r.fecha_entrega }}</div>
