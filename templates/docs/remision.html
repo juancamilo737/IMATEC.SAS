@@ -45,6 +45,7 @@
   {% if envio %}<div class="doc-envio">{{ envio | join(' · ') | safe }}</div>{% endif %}
 
   {% set con_valores = r['items'] | selectattr('precio') | list | length > 0 %}
+  <div class="doc-cuerpo">
   <table class="doc-items">
     <thead><tr><th style="width:26px">#</th><th>Descripción</th>
       <th class="num">Cant.</th><th class="num">Und.</th>
@@ -65,6 +66,8 @@
     {% endfor %}
     </tbody>
   </table>
+  <div class="doc-relleno" aria-hidden="true"></div>
+  </div>
 
   {% if con_valores %}
     {% set sub = r['items'] | sum(attribute='precio', start=0) and
