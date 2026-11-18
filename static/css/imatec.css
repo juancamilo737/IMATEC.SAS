@@ -579,28 +579,33 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
      poniendo las cosas lado a lado, nunca encogiendo la letra hasta que toque
      buscar la lupa. */
   .doc{box-shadow:none;margin:0;padding:0;max-width:100%;border:0;
-    font-size:12px}
+    font-size:13.4px;
+    min-height:196mm;              /* A5 menos los márgenes: la hoja entera */
+    display:flex;flex-direction:column}
+  /* Las firmas y el pie bajan al final de la hoja. El espacio sobrante queda
+     entre los totales y las firmas, que es donde no estorba. */
+  .doc-firmas{margin-top:auto !important}
 
   /* Cabecera en una sola fila: logo y emisor a la izquierda, tipo y número a
      la derecha. Antes caía en columna y se comía 190 px de alto con media
      hoja vacía al lado. */
   .doc-cab{display:flex;flex-direction:row;align-items:flex-start;
     gap:11px;padding-bottom:7px;margin-bottom:9px;border-bottom:2px solid var(--amarillo)}
-  .doc-cab img{height:40px;flex:0 0 auto}
-  .doc-emisor{flex:1;min-width:0;font-size:10.8px;line-height:1.42}
-  .doc-emisor b{font-size:14px;margin-bottom:2px}
+  .doc-cab img{height:46px;flex:0 0 auto}
+  .doc-emisor{flex:1;min-width:0;font-size:12px;line-height:1.45}
+  .doc-emisor b{font-size:16px;margin-bottom:3px}
   .doc-tipo{flex:0 0 auto;min-width:0;width:auto;text-align:right}
-  .doc-tipo .clase{display:inline-block;font-size:10.4px;padding:2px 6px;
+  .doc-tipo .clase{display:inline-block;font-size:11.6px;padding:3px 8px;
     letter-spacing:.08em}
-  .doc-tipo .numero{font-size:16px;margin-top:3px;white-space:nowrap}
-  .doc-tipo .meta{font-size:10.2px;margin-top:3px;line-height:1.45}
+  .doc-tipo .numero{font-size:19px;margin-top:4px;white-space:nowrap}
+  .doc-tipo .meta{font-size:11.4px;margin-top:4px;line-height:1.45}
 
   /* Cliente y Entrega, uno al lado del otro. */
   .doc-partes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
   /* Sin segundo bloque, Cliente se queda con el ancho completo. */
   .doc-partes.sola{grid-template-columns:1fr}
-  .doc-parte{padding:5px 7px;font-size:10.8px;line-height:1.38}
-  .doc-parte h5{font-size:9.8px;margin-bottom:3px;padding-bottom:2px;letter-spacing:.1em}
+  .doc-parte{padding:7px 9px;font-size:12px;line-height:1.4}
+  .doc-parte h5{font-size:10.4px;margin-bottom:4px;padding-bottom:3px;letter-spacing:.1em}
   .doc-parte strong{font-weight:700}
   .doc-parte-datos{margin-top:1px}
   /* Renglón de envío: sólo aparece cuando hay algo que no se deduce del
@@ -610,9 +615,9 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
 
   /* Renglones. La descripción se queda con todo el ancho sobrante; los
      números se encogen a su contenido y nunca se parten. */
-  table.doc-items{font-size:11.4px;margin-bottom:8px;table-layout:auto;width:100%}
-  table.doc-items th{font-size:9.8px;padding:4px 5px;line-height:1.2}
-  table.doc-items td{padding:4px 5px;line-height:1.35;vertical-align:top}
+  table.doc-items{font-size:12.6px;margin-bottom:9px;table-layout:auto;width:100%}
+  table.doc-items th{font-size:10.6px;padding:5px 6px;line-height:1.2}
+  table.doc-items td{padding:5px 6px;line-height:1.38;vertical-align:top}
   table.doc-items td.num{width:1%;white-space:nowrap;padding-left:3px;padding-right:3px}
   table.doc-items th.num{width:1%;white-space:normal;padding-left:3px;padding-right:3px}
   /* Abreviadas ya caben enteras; partidas en dos se veían como un error. */
@@ -625,23 +630,23 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
   /* Notas y sumas, lado a lado. */
   .doc-totales{display:flex;flex-direction:row;align-items:flex-start;gap:9px;
     break-inside:avoid;page-break-inside:avoid}
-  .doc-notas{flex:1;min-width:0;font-size:10.4px;line-height:1.42}
+  .doc-notas{flex:1;min-width:0;font-size:11.4px;line-height:1.45}
   .doc-notas h5{font-size:9.8px;margin-bottom:2px;letter-spacing:.1em}
   .doc-notas p{margin:0 0 3px}
-  .doc-sumas{flex:0 0 auto;width:168px;font-size:11px}
+  .doc-sumas{flex:0 0 auto;width:185px;font-size:12.4px}
   .doc-sumas div{padding:1.5px 0}
-  .doc-sumas div.total{font-size:12.5px;padding:3px 6px}
-  .doc-letras{font-size:10px;padding:3px 6px;margin-top:4px;line-height:1.3}
+  .doc-sumas div.total{font-size:14.5px;padding:5px 8px}
+  .doc-letras{font-size:11.4px;padding:5px 8px;margin-top:6px;line-height:1.35}
 
   /* Firmas. El margen de 44 px de pantalla es aire de A4: en A5 son casi dos
      renglones de la tabla. Se deja el espacio justo para firmar encima. */
   .doc-firmas{display:grid;grid-template-columns:1fr 1fr;gap:22px;
     margin-top:22px;font-size:10.4px;break-inside:avoid;page-break-inside:avoid}
-  .doc-firma{padding-top:3px;line-height:1.3}
+  .doc-firma{padding-top:5px;line-height:1.35}
   .doc-firma .silencio{font-size:9.8px}
 
   .doc-dian{font-size:9.8px;padding:4px 6px;margin-top:5px;line-height:1.35}
-  .doc-pie{font-size:9.8px;margin-top:6px;padding-top:4px;line-height:1.35}
+  .doc-pie{font-size:10.6px;margin-top:8px;padding-top:6px;line-height:1.35}
 
   .doc-acciones,.no-imprimir,.cabecera,.barra-superior,.pie,.lateral,.barra-panel{display:none !important}
   .panel{display:block}
