@@ -598,7 +598,7 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
      la derecha. Antes caía en columna y se comía 190 px de alto con media
      hoja vacía al lado. */
   .doc-cab{display:flex;flex-direction:row;align-items:flex-start;
-    gap:11px;padding-bottom:7px;margin-bottom:9px;border-bottom:2px solid var(--amarillo)}
+    gap:11px;padding-bottom:5px;margin-bottom:7px;border-bottom:2px solid var(--amarillo)}
   .doc-cab img{height:46px;flex:0 0 auto}
   .doc-emisor{flex:1;min-width:0;font-size:12px;line-height:1.45}
   .doc-emisor b{font-size:16px;margin-bottom:3px}
@@ -611,10 +611,10 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
   .doc-tipo .meta{font-size:11.4px;margin-top:4px;line-height:1.45}
 
   /* Cliente y Entrega, uno al lado del otro. */
-  .doc-partes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
+  .doc-partes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
   /* Sin segundo bloque, Cliente se queda con el ancho completo. */
   .doc-partes.sola{grid-template-columns:1fr}
-  .doc-parte{padding:7px 9px;font-size:12px;line-height:1.4}
+  .doc-parte{padding:5px 8px;font-size:12px;line-height:1.34}
   .doc-parte h5{font-size:10.4px;margin-bottom:4px;padding-bottom:3px;letter-spacing:.1em}
   .doc-parte strong{font-weight:700}
   .doc-parte-datos{margin-top:1px}
@@ -625,7 +625,7 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
 
   /* Renglones. La descripción se queda con todo el ancho sobrante; los
      números se encogen a su contenido y nunca se parten. */
-  table.doc-items{font-size:12.6px;margin-bottom:9px;table-layout:auto;width:100%}
+  table.doc-items{font-size:12.6px;margin-bottom:7px;table-layout:auto;width:100%}
   table.doc-items th{font-size:10.6px;padding:5px 6px;line-height:1.2}
   table.doc-items td{padding:5px 6px;line-height:1.38;vertical-align:top}
   table.doc-items td.num{width:1%;white-space:nowrap;padding-left:3px;padding-right:3px}
@@ -646,12 +646,12 @@ table.doc-items .esp{font-size:10.5px;color:#555;display:block;margin-top:3px}
   .doc-sumas{flex:0 0 auto;width:185px;font-size:12.4px}
   .doc-sumas div{padding:1.5px 0}
   .doc-sumas div.total{font-size:14.5px;padding:5px 8px}
-  .doc-letras{font-size:11.4px;padding:5px 8px;margin-top:6px;line-height:1.35}
+  .doc-letras{font-size:11.4px;padding:4px 8px;margin-top:4px;line-height:1.3}
 
   /* Firmas. El margen de 44 px de pantalla es aire de A4: en A5 son casi dos
      renglones de la tabla. Se deja el espacio justo para firmar encima. */
   .doc-firmas{display:grid;grid-template-columns:1fr 1fr;gap:22px;
-    margin-top:22px;font-size:10.4px;break-inside:avoid;page-break-inside:avoid}
+    margin-top:16px;font-size:10.4px;break-inside:avoid;page-break-inside:avoid}
   .doc-firma{padding-top:5px;line-height:1.35}
   .doc-firma .silencio{font-size:9.8px}
 

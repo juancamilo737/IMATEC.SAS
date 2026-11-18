@@ -66,9 +66,11 @@
   {% endwith %}
 
   <table class="doc-items">
+    {% set con_descuento = c['items'] | selectattr('descuento_pct') | list | length > 0 %}
     <thead><tr><th style="width:26px">#</th><th>Descripción</th><th class="num">Cant.</th>
       <th class="num">Und.</th><th class="num">V. unit.</th>
-      <th class="num">Desc.</th><th class="num">Valor</th></tr></thead>
+      {% if con_descuento %}<th class="num">Desc.</th>{% endif %}
+      <th class="num">Valor</th></tr></thead>
     <tbody>
     {% for i in c['items'] %}
       <tr>
@@ -78,7 +80,7 @@
         <td class="num">{{ i.cantidad|num }}</td>
         <td class="num">{{ i.unidad }}</td>
         <td class="num">{{ i.precio|cop }}</td>
-        <td class="num">{{ i.descuento_pct|num }}%</td>
+        {% if con_descuento %}<td class="num">{{ i.descuento_pct|num }}%</td>{% endif %}
         <td class="num"><strong>{{ i.total|cop }}</strong></td>
       </tr>
     {% endfor %}
@@ -90,9 +92,8 @@
       {% if c.condiciones %}<h5>Condiciones comerciales</h5><p>{{ c.condiciones }}</p>{% endif %}
       {% if c.notas %}<h5>Notas</h5><p>{{ c.notas }}</p>{% endif %}
       <h5>Importante</h5>
-      <p>Los valores están expresados en pesos colombianos (COP). Esta cotización no constituye
-      una factura de venta. Los precios pueden variar si cambian las medidas, calibres o
-      acabados definidos.</p>
+      <p>Valores en pesos colombianos. No es una factura de venta. Los precios
+      pueden variar si cambian medidas, calibres o acabados.</p>
     </div>
     <div class="doc-sumas">
       <div><span>Subtotal</span><span>{{ c.subtotal|cop }}</span></div>
@@ -108,9 +109,5 @@
     <div class="doc-firma">{{ c.cliente.razon_social }}<br><span class="silencio">Aceptación del cliente</span></div>
   </div>
 
-  <div class="doc-pie">
-    Fabricación de equipos y montajes industriales · Estructuras metálicas ·
-    Equipos hospitalarios · Obras civiles · Extracción de núcleos
-  </div>
 </div>
 {% endblock %}
